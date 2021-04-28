@@ -24,4 +24,4 @@ git merge --ff-only o/main "${branch_name}" || or_die merge
 
 git tag "${branch_name}" || or_die tag
 
-git push o main || or_die push
+git push o main "${branch_name}" || or_die push
