@@ -1,9 +1,27 @@
 #!/bin/env bash
+#
+# this script runs after a star has been earned to tag, merge, and push
+#
 
-# this script runs after a star has been earned
+# this relative path stinks
+source bin/functions.sh
 
-branch_name=%(git rev-parse --symbolic-full-name HEAD | sed -e 's,heads/,,')
-git checkout main
-git merge --ff-only ${branch_name}
-git tag ${branch_name}
-git push o main
+mess=$(git status --porcelain=2)
+[[ "${mess}" = "" ]] || or_die .... hey you gotta clean up first
+
+full_branch_name=$(git rev-parse --symbolic-full-name HEAD)
+branch_name=$(basename ${full_branch_name})
+git fetch --all --prune --quiet || or_die fetch
+
+git rebase o/main || or_die rebase
+
+cd "src/${branch_name}"
+cargo test || or_die tests failed
+
+git checkout main || or_die checkout
+
+git merge --ff-only o/main "${branch_name}" || or_die merge
+
+git tag "${branch_name}" || or_die tag
+
+git push o main || or_die push
