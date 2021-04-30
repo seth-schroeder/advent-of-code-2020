@@ -22,6 +22,7 @@ git checkout main || or_die checkout
 
 git merge --ff-only o/main "${branch_name}" || or_die merge
 
-git tag "${branch_name}" || or_die tag
+tag_name="v${branch_name}"
+git tag "${tag_name}" || or_die tag
 
-git push o main "${branch_name}" || or_die push
+git push o main "${tag_name}" || or_die push
