@@ -3,7 +3,7 @@ use std::io;
 
 // this implementation has got to be pretty bad...
 pub fn read_test_data() -> Result<Vec<String>, io::Error> {
-    let path = fs::canonicalize("../../input-data/day02-star1/input.txt")?;
+    let path = fs::canonicalize("../../input-data/day03-star1/input.txt")?;
     let s = std::fs::read_to_string(path)?;
 
     let mut mv: Vec<String> = Vec::new();
@@ -15,7 +15,7 @@ pub fn read_test_data() -> Result<Vec<String>, io::Error> {
     Ok(mv)
 }
 
-pub fn data_to_lines(data: Vec<String>) -> Vec<Vec<bool>> {
+pub fn data_to_lines(data: &Vec<String>) -> Vec<Vec<bool>> {
     let mut v = Vec::with_capacity(data.len());
 
     for datum in data {
@@ -51,9 +51,9 @@ mod tests {
 
     #[test]
     fn verify_data_to_lines() {
-        let data:Vec<String> = vec!["...".to_string(), "##.".to_string()];
+        let data: Vec<String> = vec!["...".to_string(), "##.".to_string()];
 
-        let mut output = data_to_lines(data);
+        let mut output = data_to_lines(&data);
         assert_eq!(Some(vec![true, true, false]), output.pop());
         assert_eq!(Some(vec![false, false, false]), output.pop());
     }
