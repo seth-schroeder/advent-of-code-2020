@@ -1,7 +1,26 @@
+use std::collections::HashMap;
 use std::convert::TryInto;
+use std::error::Error;
 
-fn main() {
-    println!("Hello, world!");
+mod test_data;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let lines = test_data::read_test_data()?;
+    let mut scores = HashMap::new();
+
+    for line in lines {
+        let score = seat_id(&line);
+        scores.insert(score, line);
+    }
+
+    let largest = scores.keys().max().unwrap();
+    println!(
+        "The largest score was {} for {}",
+        largest,
+        scores.get(largest).unwrap()
+    );
+
+    Ok(())
 }
 
 fn range_population(range: (u32, u32)) -> u32 {
