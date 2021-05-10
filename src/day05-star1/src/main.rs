@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 fn main() {
     println!("Hello, world!");
 }
@@ -27,14 +29,18 @@ fn upper_half(range: (u32, u32)) -> (u32, u32) {
 }
 
 // probably a good scenario for reduce
-fn find_row(s: &str) -> u32 {
-    let mut range = (0, 127);
+fn walk(input: &str, go_up: char, go_down: char) -> u32 {
+    let exponent = input.len();
+    let num_items = 2_u32.pow(exponent.try_into().unwrap());
+    let mut range = (0, num_items - 1);
 
-    for c in s.chars() {
-        if c == 'B' {
+    for c in input.chars() {
+        if c == go_up {
             range = upper_half(range);
-        } else if c == 'F' {
+        } else if c == go_down {
             range = lower_half(range);
+        } else {
+            panic!("wtf is {}", c);
         }
     }
 
@@ -45,13 +51,41 @@ fn find_row(s: &str) -> u32 {
     range.0
 }
 
+fn find_row(s: &str) -> u32 {
+    walk(s, 'B', 'F')
+}
+
+fn find_col(s: &str) -> u32 {
+    walk(s, 'R', 'L')
+}
+
+fn seat_id(s: &str) -> u32 {
+    let copy = String::from(s);
+    let (row, col) = copy.split_at(7);
+
+    let row_val = find_row(&row);
+    let col_val = find_col(&col);
+
+    row_val * 8 + col_val
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+    fn test_seat_id() {
+        assert_eq!(seat_id("FBFBBFFRLR"), 357);
+    }
+
+    #[test]
     fn test_find_row() {
         assert_eq!(find_row("FBFBBFF"), 44);
+    }
+
+    #[test]
+    fn test_find_col() {
+        assert_eq!(find_col("RLR"), 5);
     }
 
     #[test]
