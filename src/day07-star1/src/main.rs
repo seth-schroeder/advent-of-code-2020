@@ -6,13 +6,20 @@ mod test_data;
 fn main() -> Result<(), Box<dyn Error>> {
     let lines = test_data::read_test_data()?;
 
+    for line in lines {
+        println!("{:?}", parse(&line));
+    }
+
     Ok(())
 }
 
 fn first_pass(s: &str) -> (String, String) {
     let pat = r"^(.*) bags contain (.*)\.$";
     let re = Regex::new(&pat).unwrap();
-    let caps = re.captures(s).unwrap();
+    let caps = match re.captures(s) {
+        Some(x) => x,
+        None => { panic!("choked on {}", s); },
+    };
 
     (
         String::from(caps.get(1).unwrap().as_str()),
@@ -24,7 +31,12 @@ fn second_pass(s: &str) -> Vec<String> {
     let mut v = Vec::new();
 
     for raw in s.split(", ") {
+        if raw == "no other bags" {
+            break;
+        }
+
         let chunks: Vec<&str> = raw.split_whitespace().collect();
+
         let bag = format!("{} {}", chunks.get(1).unwrap(), chunks.get(2).unwrap());
         v.push(bag);
     }
@@ -59,6 +71,11 @@ mod tests {
             first_pass("light red bags contain 1 bright white bag, 2 muted yellow bags.");
         assert_eq!(outer, "light red");
         assert_eq!(inner, "1 bright white bag, 2 muted yellow bags");
+
+        let (outer, inner) =
+            first_pass("faded blue bags contain no other bags.");
+        assert_eq!(outer, "faded blue");
+        assert_eq!(inner, "no other bags");
     }
 
     #[test]
@@ -68,5 +85,8 @@ mod tests {
             second_pass("1 bright white bag, 2 muted yellow bags"),
             vec!["bright white", "muted yellow"]
         );
+
+        let empty: Vec<String> = Vec::new();
+        assert_eq!(second_pass("no other bags"), empty);
     }
 }
