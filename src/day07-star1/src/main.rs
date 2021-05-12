@@ -1,15 +1,13 @@
 use regex::Regex;
 use std::error::Error;
+use std::collections::HashMap;
 
 mod test_data;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let lines = test_data::read_test_data()?;
-
-    for line in lines {
-        println!("{:?}", parse(&line));
-    }
-
+    let map = hash_map_that_will_almost_certainly_be_killed_by_the_second_star(lines);
+    println!("{:#?}", map);
     Ok(())
 }
 
@@ -48,6 +46,17 @@ fn parse(s: &str) -> (String, Vec<String>) {
     let (outer, inner) = first_pass(s);
 
     (outer, second_pass(&inner))
+}
+
+fn hash_map_that_will_almost_certainly_be_killed_by_the_second_star(v: Vec<String>) -> HashMap<String, Vec<String>> {
+    let mut h = HashMap::new();
+
+    for line in v {
+        let (key, val) = parse(&line);
+        h.insert(key, val);
+    }
+
+    h
 }
 
 #[cfg(test)]
