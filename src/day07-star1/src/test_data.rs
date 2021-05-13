@@ -2,8 +2,8 @@ use std::fs;
 use std::io;
 
 // this implementation has got to be pretty bad...
-pub fn read_test_data() -> Result<Vec<String>, io::Error> {
-    let path = fs::canonicalize("../../input-data/day07-star1/haiku.txt")?;
+pub fn read_test_data(relative_file_name: &str) -> Result<Vec<String>, io::Error> {
+    let path = fs::canonicalize(format!("../../input-data/{}", relative_file_name))?;
     let s = std::fs::read_to_string(path)?;
 
     let mut mv: Vec<String> = Vec::new();
