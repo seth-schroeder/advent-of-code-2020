@@ -1,18 +1,63 @@
+use petgraph::graph::{Graph};
+use petgraph::graphmap::DiGraphMap;
 use regex::Regex;
 use std::collections::HashMap;
 
-pub struct Result {
+#[derive(Debug)]
+pub struct RawData {
     source: String,
     edges: HashMap<String, usize>,
 }
 
-pub fn parse(lines: &[String]) -> Vec<Result> {
+impl RawData {
+    pub fn graph(results: &[RawData]) -> Graph<&String, usize> {
+        let mut g = Graph::new();
+
+        for result in results {
+            let source = g.add_node(&result.source);
+
+            for (destination, weight) in &result.edges {
+                let destination = g.add_node(destination);
+
+                g.add_edge(source, destination, *weight);
+            }
+        }
+
+        g
+    }
+
+    pub fn trigraph(results: &Vec<RawData>) -> DiGraphMap<&str, usize> {
+        let mut v = DiGraphMap::new();
+
+        for result in results {
+            for (destination, weight) in &result.edges {
+                v.add_edge(&result.source[..], destination, *weight);
+            }
+        }
+
+        v
+    }
+
+    pub fn digraph(results: &[RawData]) -> DiGraphMap<&String, usize> {
+        let mut g = DiGraphMap::new();
+
+        for result in results {
+            for (destination, weight) in &result.edges {
+                g.add_edge(&result.source, destination, *weight);
+            }
+        }
+
+        g
+    }
+}
+
+pub fn parse(lines: &[String]) -> Vec<RawData> {
     let mut v = Vec::new();
 
     for line in lines {
         let (source, raw_edges) = first_pass(line);
         let edges = second_pass(&raw_edges);
-        let result = Result { source, edges };
+        let result = RawData { source, edges };
 
         v.push(result);
     }
