@@ -1,31 +1,15 @@
-use parser::RawData;
 use std::error::Error;
 
 mod parser;
 mod test_data;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day07-star2/small.txt")?;
-    let results = parser::parse(&lines);
+    let lines = test_data::read_test_data("day07-star1/haiku.txt")?;
+    let parsed = parser::hash_parse(&lines);
 
-    let dg = RawData::digraph(&results);
-    // println!("{:#?}", dg);
     println!(
-        "{:?}",
-        dg[(&String::from("shiny gold"), &String::from("dark red"))]
+        "well we are carrying around {} bags",
+        parser::dive(&parsed, "shiny gold")
     );
-    let tg = RawData::trigraph(&results);
-    // println!("{:#?}", tg);
-    println!(
-        "{:?}",
-        tg[("shiny gold", "dark red")]
-    );
-
-    let mut g = RawData::graph(&results);
-    // println!("{:#?}", g[&String::from("shiny gold")]);
-
-    // let node = g.add_node(&String::from("yolo"));
-    // println!("{}", node.0);
-
     Ok(())
 }
