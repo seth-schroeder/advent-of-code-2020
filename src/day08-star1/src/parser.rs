@@ -1,10 +1,13 @@
+use std::collections::HashSet;
+use std::convert::TryFrom;
+
 #[path = "test_data.rs"]
 mod test_data;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
-enum Operator {
+pub enum Operator {
     Acc,
     Jmp,
     NoOp,
@@ -13,9 +16,69 @@ enum Operator {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
-struct Instruction {
+pub struct Instruction {
     operator: Operator,
     operand: i32,
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug)]
+pub enum RuntimeError {
+    InvalidInstructionIndex,
+}
+
+#[derive(Debug)]
+pub struct Processor {
+    instructions: Vec<Instruction>,
+    pub accumulator: i32,
+}
+
+impl Processor {
+    pub fn new(instructions: Vec<Instruction>) -> Self {
+        Processor {
+            instructions,
+            accumulator: 0,
+        }
+    }
+
+    pub fn run(&mut self) -> Result<(), RuntimeError> {
+        let mut index = 0;
+        let mut visited = HashSet::new();
+
+        loop {
+            if visited.contains(&index) {
+                return Ok(());
+            } else {
+                visited.insert(index);
+            }
+
+            if let Some(instruction) = self.instructions.get(index) {
+                match instruction.operator {
+                    Operator::Acc => {
+                        self.accumulator += instruction.operand;
+                        index += 1
+                    }
+                    Operator::Jmp => {
+                        let mut shunt: i32 = match i32::try_from(index) {
+                            Ok(positive_number) => positive_number,
+                            Err(_) => return Err(RuntimeError::InvalidInstructionIndex),
+                        };
+
+                        shunt += instruction.operand;
+
+                        match usize::try_from(shunt) {
+                            Ok(positive_number) => index = positive_number,
+                            Err(_) => return Err(RuntimeError::InvalidInstructionIndex),
+                        }
+                    }
+                    Operator::NoOp => index += 1,
+                };
+            } else {
+                return Err(RuntimeError::InvalidInstructionIndex);
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +121,20 @@ impl Instruction {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_run() {
+        let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
+        let data = Instruction::parse(&lines).unwrap();
+
+        if let Some(instructions) = data {
+            let mut processor = Processor::new(instructions);
+            let run = processor.run();
+
+            assert_matches!(run, Ok(()));
+            assert_eq!(5, processor.accumulator);
+        }
+    }
 
     #[test]
     fn test_parse() {
