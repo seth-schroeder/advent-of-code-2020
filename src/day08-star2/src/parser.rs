@@ -25,6 +25,7 @@ pub struct Instruction {
 
 #[derive(Debug)]
 pub enum RuntimeError {
+    LoopDetected,
     InvalidInstructionIndex,
 }
 
@@ -32,6 +33,12 @@ pub enum RuntimeError {
 pub struct Processor {
     instructions: Vec<Instruction>,
     pub accumulator: i32,
+}
+
+#[derive(Debug)]
+pub struct JumpState {
+    index: usize,
+    accumulator: i32,
 }
 
 impl Processor {
@@ -42,14 +49,24 @@ impl Processor {
         }
     }
 
-    pub fn find_fatal_jump(&mut self) -> Result<Option<usize>, RuntimeError> {
+    pub fn find_fatal_jump(&mut self) -> Result<(), RuntimeError> {
         let mut index = 0;
         let mut visited = HashSet::new();
-        let mut jumps = Vec::new();
+        let mut jumps:Vec<JumpState> = Vec::new();
 
         loop {
+            if index > self.instructions.len() {
+                break;
+            }
+
             if visited.contains(&index) {
-                return Ok(jumps.pop());
+                let last_jump = jumps.pop().unwrap();
+                let instruction = Instruction { operator: Operator::NoOp, operand: 0 };
+
+                self.accumulator = last_jump.accumulator;
+                index = last_jump.index;
+
+                self.instructions.insert(last_jump.index, instruction);
             } else {
                 visited.insert(index);
             }
@@ -61,7 +78,11 @@ impl Processor {
                         index += 1
                     }
                     Operator::Jmp => {
-                        jumps.push(index);
+                        jumps.push(JumpState {
+                            index,
+                            accumulator: self.accumulator,
+                        });
+
                         let mut shunt: i32 = match i32::try_from(index) {
                             Ok(positive_number) => positive_number,
                             Err(_) => return Err(RuntimeError::InvalidInstructionIndex),
@@ -74,12 +95,16 @@ impl Processor {
                             Err(_) => return Err(RuntimeError::InvalidInstructionIndex),
                         }
                     }
-                    Operator::NoOp => index += 1,
+                    Operator::NoOp => {
+                        index += 1
+                    }
                 };
             } else {
                 return Err(RuntimeError::InvalidInstructionIndex);
             }
         }
+
+        Ok(())
     }
 }
 
@@ -134,7 +159,7 @@ mod tests {
             let cliff = processor.find_fatal_jump();
 
             assert_matches!(cliff, Ok(_));
-            assert_matches!(cliff.unwrap(), Some(4));
+            assert_matches!(processor.accumulator, 8);
         }
     }
 
