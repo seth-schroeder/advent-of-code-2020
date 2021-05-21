@@ -35,21 +35,19 @@ type Accumulator = i32;
 pub struct Processor {
     accumulator: Accumulator,
     instruction_pointer: usize,
-    program: Program,
 }
 
 impl Processor {
-    pub fn new(program: Program) -> Self {
+    pub fn new() -> Self {
         Processor {
-            program,
             instruction_pointer: 0,
             accumulator: 0,
         }
     }
 
-    pub fn run(&mut self) -> Result<Option<Accumulator>, ProcessingException> {
+    pub fn run(&mut self, program: Program) -> Result<Option<Accumulator>, ProcessingException> {
         loop {
-            if let Some(instruction) = self.program.get(self.instruction_pointer) {
+            if let Some(instruction) = program.get(self.instruction_pointer) {
                 match instruction.operator {
                     Operator::Acc => {
                         let operand = instruction.operand;
@@ -79,12 +77,15 @@ mod tests {
 
     #[test]
     fn test_empty_program_completes() {
-        let result = Processor::new(Program::new()).run();
+        let mut processor = Processor::new();
+        let result = processor.run(Program::new());
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
             assert_eq!(0, number);
         }
+
+        assert_eq!(0, processor.instruction_pointer);
     }
 
     #[test]
@@ -93,12 +94,15 @@ mod tests {
             operator: Operator::NoOp,
             operand: 0,
         }];
-        let result = Processor::new(program).run();
+        let mut processor = Processor::new();
+        let result = processor.run(program);
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
             assert_eq!(0, number);
         }
+
+        assert_eq!(1, processor.instruction_pointer);
     }
 
     #[test]
@@ -107,11 +111,14 @@ mod tests {
             operator: Operator::Acc,
             operand: 42,
         }];
-        let result = Processor::new(program).run();
+        let mut processor = Processor::new();
+        let result = processor.run(program);
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
             assert_eq!(42, number);
         }
+
+        assert_eq!(1, processor.instruction_pointer);
     }
 }
