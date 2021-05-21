@@ -121,4 +121,21 @@ mod tests {
 
         assert_eq!(1, processor.instruction_pointer);
     }
+
+    #[test]
+    fn test_jmp_completes() {
+        let program = vec![Instruction {
+            operator: Operator::Jmp,
+            operand: 1,
+        }];
+        let mut processor = Processor::new();
+        let result = processor.run(program);
+
+        assert_matches!(result, Ok(_));
+        if let Some(number) = result.unwrap() {
+            assert_eq!(0, number);
+        }
+
+        assert_eq!(1, processor.instruction_pointer);
+    }
 }
