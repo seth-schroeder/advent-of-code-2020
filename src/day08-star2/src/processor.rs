@@ -1,5 +1,5 @@
-use std::convert::TryFrom;
 use std::collections::HashSet;
+use std::convert::TryFrom;
 
 #[path = "test_data.rs"]
 mod test_data;
@@ -27,6 +27,14 @@ pub enum RuntimeError {
 pub struct Instruction {
     operator: Operator,
     operand: i32,
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, PartialEq)]
+pub struct JumpState {
+    index: usize,
+    accumulator: Accumulator,
 }
 
 impl Instruction {
@@ -73,7 +81,8 @@ type Accumulator = i32;
 pub struct Processor {
     accumulator: Accumulator,
     instruction_pointer: usize,
-    step: usize,
+    steps: usize,
+    jumps: Vec<JumpState>,
 }
 
 impl Processor {
@@ -83,9 +92,11 @@ impl Processor {
             instruction_pointer: 0,
 
             // this increases monotonically
-            step: 0,
+            steps: 0,
 
             accumulator: 0,
+
+            jumps: Vec::new(),
         }
     }
 
@@ -98,14 +109,14 @@ impl Processor {
             Operator::NoOp => "noop",
         };
 
-        if self.step == 0 {
+        if self.steps == 0 {
             eprintln!("stp ip  opc  ope acc");
             eprintln!("--- --- ---- --- ---");
         }
 
         eprintln!(
             "{step:>0pwidth$}\t{ptr:>0pwidth$}\t{inst:<iwidth$} {operand:>pwidth$}\t {acc:<iwidth$}",
-            step = self.step,
+            step = self.steps,
             ptr = self.instruction_pointer,
             pwidth = 3,
             inst = inst,
@@ -144,7 +155,7 @@ impl Processor {
             } else {
                 break;
             }
-            self.step += 1
+            self.steps += 1
         }
 
         Ok(Some(self.accumulator))
@@ -155,17 +166,20 @@ impl Processor {
             return Err(RuntimeError::LoopDetected);
         }
 
+        self.jumps.push(JumpState {
+            index: self.instruction_pointer,
+            accumulator: self.accumulator,
+        });
+
         match i32::try_from(self.instruction_pointer) {
-            Ok(from_usize) => {
-                match usize::try_from(from_usize + distance) {
-                    Ok(from_i32) => {
-                        self.instruction_pointer = from_i32;
-                        Ok(())
-                    }
-                    Err(_) => Err(RuntimeError::InvalidInstructionIndex),
+            Ok(from_usize) => match usize::try_from(from_usize + distance) {
+                Ok(from_i32) => {
+                    self.instruction_pointer = from_i32;
+                    Ok(())
                 }
+                Err(_) => Err(RuntimeError::InvalidInstructionIndex),
             },
-            Err(_) => Err(RuntimeError::InvalidInstructionIndex)
+            Err(_) => Err(RuntimeError::InvalidInstructionIndex),
         }
     }
 
@@ -257,6 +271,24 @@ mod tests {
 
             assert_eq!(5, processor.accumulator);
             assert_eq!(1, processor.instruction_pointer);
+        }
+    }
+
+    #[test]
+    fn test_jump_state() {
+        let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
+
+        let data = Instruction::parse(&lines);
+        assert_matches!(data, Ok(_));
+
+        let mut processor = Processor::new();
+
+        if let Some(instructions) = data.unwrap() {
+            let result = processor.run(instructions);
+            assert_matches!(result, Err(RuntimeError::LoopDetected));
+
+            assert_eq!(3, processor.jumps.len());
+            assert_eq!(Some(JumpState { index: 4, accumulator: 5 }), processor.jumps.pop());
         }
     }
 }
