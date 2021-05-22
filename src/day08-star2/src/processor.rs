@@ -34,7 +34,7 @@ pub struct Instruction {
 #[derive(Debug, PartialEq)]
 pub struct JumpState {
     index: usize,
-    accumulator: Accumulator,
+    pub accumulator: Accumulator,
 }
 
 impl Instruction {
@@ -76,13 +76,13 @@ pub type Program = Vec<Instruction>;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type Accumulator = i32;
+pub type Accumulator = i32;
 
 pub struct Processor {
-    accumulator: Accumulator,
+    pub accumulator: Accumulator,
+    pub jumps: Vec<JumpState>,
     instruction_pointer: usize,
     steps: usize,
-    jumps: Vec<JumpState>,
 }
 
 impl Processor {
@@ -126,7 +126,7 @@ impl Processor {
         );
     }
 
-    pub fn run(&mut self, program: Program) -> Result<Option<Accumulator>, RuntimeError> {
+    pub fn run(&mut self, program: &Program) -> Result<Option<Accumulator>, RuntimeError> {
         let mut visited = HashSet::new();
 
         loop {
@@ -195,7 +195,7 @@ mod tests {
     #[test]
     fn test_empty_program_completes() {
         let mut processor = Processor::new();
-        let result = processor.run(Program::new());
+        let result = processor.run(&Program::new());
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
@@ -212,7 +212,7 @@ mod tests {
             operand: 0,
         }];
         let mut processor = Processor::new();
-        let result = processor.run(program);
+        let result = processor.run(&program);
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
@@ -229,7 +229,7 @@ mod tests {
             operand: 42,
         }];
         let mut processor = Processor::new();
-        let result = processor.run(program);
+        let result = processor.run(&program);
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
@@ -246,7 +246,7 @@ mod tests {
             operand: 1,
         }];
         let mut processor = Processor::new();
-        let result = processor.run(program);
+        let result = processor.run(&program);
 
         assert_matches!(result, Ok(_));
         if let Some(number) = result.unwrap() {
@@ -265,7 +265,7 @@ mod tests {
         let instructions = Instruction::parse(&lines);
         assert_matches!(instructions, Ok(_));
 
-        let result = processor.run(instructions.unwrap());
+        let result = processor.run(&instructions.unwrap());
         assert_matches!(result, Err(RuntimeError::LoopDetected));
 
         assert_eq!(5, processor.accumulator);
@@ -281,7 +281,7 @@ mod tests {
         let instructions = Instruction::parse(&lines);
         assert_matches!(instructions, Ok(_));
 
-        let result = processor.run(instructions.unwrap());
+        let result = processor.run(&instructions.unwrap());
         assert_matches!(result, Err(RuntimeError::LoopDetected));
 
         assert_eq!(3, processor.jumps.len());
