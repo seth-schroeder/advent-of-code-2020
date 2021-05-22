@@ -6,7 +6,7 @@ mod test_data;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operator {
     Acc,
     Jmp,
@@ -23,7 +23,7 @@ pub enum RuntimeError {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Instruction {
     operator: Operator,
     operand: i32,
@@ -38,9 +38,9 @@ pub struct JumpState {
 }
 
 impl Instruction {
-    pub fn parse(lines: &[String]) -> Result<Option<Vec<Instruction>>, String> {
+    pub fn parse(lines: &[String]) -> Result<Program, String> {
         if lines.is_empty() {
-            return Ok(None);
+            return Ok(vec![]);
         }
 
         let mut v = Vec::new();
@@ -66,7 +66,7 @@ impl Instruction {
             v.push(Instruction { operator, operand });
         }
 
-        Ok(Some(v))
+        Ok(v)
     }
 }
 
@@ -260,35 +260,53 @@ mod tests {
     fn test_loop_halts() {
         let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
 
-        let data = Instruction::parse(&lines);
-        assert_matches!(data, Ok(_));
-
         let mut processor = Processor::new();
 
-        if let Some(instructions) = data.unwrap() {
-            let result = processor.run(instructions);
-            assert_matches!(result, Err(RuntimeError::LoopDetected));
+        let instructions = Instruction::parse(&lines);
+        assert_matches!(instructions, Ok(_));
 
-            assert_eq!(5, processor.accumulator);
-            assert_eq!(1, processor.instruction_pointer);
-        }
+        let result = processor.run(instructions.unwrap());
+        assert_matches!(result, Err(RuntimeError::LoopDetected));
+
+        assert_eq!(5, processor.accumulator);
+        assert_eq!(1, processor.instruction_pointer);
     }
 
     #[test]
     fn test_jump_state() {
         let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
 
-        let data = Instruction::parse(&lines);
-        assert_matches!(data, Ok(_));
-
         let mut processor = Processor::new();
 
-        if let Some(instructions) = data.unwrap() {
-            let result = processor.run(instructions);
-            assert_matches!(result, Err(RuntimeError::LoopDetected));
+        let instructions = Instruction::parse(&lines);
+        assert_matches!(instructions, Ok(_));
 
-            assert_eq!(3, processor.jumps.len());
-            assert_eq!(Some(JumpState { index: 4, accumulator: 5 }), processor.jumps.pop());
-        }
+        let result = processor.run(instructions.unwrap());
+        assert_matches!(result, Err(RuntimeError::LoopDetected));
+
+        assert_eq!(3, processor.jumps.len());
+        assert_eq!(
+            Some(JumpState {
+                index: 4,
+                accumulator: 5
+            }),
+            processor.jumps.pop()
+        );
+    }
+
+    // this looks like testing the language itself, but it was really
+    // a good test of my knowledge of the language. Which has now improved :-)
+    #[test]
+    fn test_clone_programs() {
+        let program = vec![Instruction {
+            operator: Operator::Jmp,
+            operand: 1,
+        }];
+
+        let mut prog2 = program.clone();
+        prog2.pop();
+
+        assert_eq!(1, program.len());
+        assert_eq!(0, prog2.len());
     }
 }
