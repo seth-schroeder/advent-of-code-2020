@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::collections::HashSet;
 
 #[path = "test_data.rs"]
 mod test_data;
@@ -115,7 +116,15 @@ impl Processor {
     }
 
     pub fn run(&mut self, program: Program) -> Result<Option<Accumulator>, RuntimeError> {
+        let mut visited = HashSet::new();
+
         loop {
+            if visited.contains(&self.instruction_pointer) {
+                return Err(RuntimeError::LoopDetected);
+            } else {
+                visited.insert(self.instruction_pointer);
+            }
+
             if let Some(instruction) = program.get(self.instruction_pointer) {
                 match instruction.operator {
                     Operator::Acc => {
@@ -148,7 +157,6 @@ impl Processor {
 
         match i32::try_from(self.instruction_pointer) {
             Ok(from_usize) => {
-                eprintln!("jump: from {} to {}", from_usize, from_usize + distance);
                 match usize::try_from(from_usize + distance) {
                     Ok(from_i32) => {
                         self.instruction_pointer = from_i32;
@@ -245,10 +253,10 @@ mod tests {
 
         if let Some(instructions) = data.unwrap() {
             let result = processor.run(instructions);
-            assert_matches!(result, Ok(_));
+            assert_matches!(result, Err(RuntimeError::LoopDetected));
 
-            assert_eq!(5, result.unwrap().unwrap());
-            assert_eq!(11, processor.instruction_pointer);
+            assert_eq!(5, processor.accumulator);
+            assert_eq!(1, processor.instruction_pointer);
         }
     }
 }
