@@ -19,24 +19,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn run_trials(initial_program: &Program) -> Accumulator {
     let mut processor = Processor::new();
-
-    if let Some(value) = run_trial(&mut processor, &initial_program) {
-        return value;
-    }
+    let mut all_jumps = Processor::find_all_jumps(&initial_program);
 
     loop {
         let mut new_program = initial_program.clone();
-        processor.jumps.pop().expect("we just jumped that, really?");
-        let last_jump = processor.jumps.pop().expect("no jumps left?");
+        let last_jump = all_jumps.pop().expect("no jumps left?");
 
-        new_program[last_jump.index] = Instruction {
+        new_program[last_jump] = Instruction {
             operator: Operator::NoOp,
             operand: -12345678,
         };
-
-        processor.instruction_pointer = last_jump.index;
-        processor.accumulator = last_jump.accumulator;
-        eprintln!("rewinding to {} with {}", processor.instruction_pointer, processor.accumulator);
 
         if let Some(value) = run_trial(&mut processor, &new_program) {
             return value;

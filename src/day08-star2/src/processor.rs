@@ -6,7 +6,7 @@ mod test_data;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
     Acc,
     Jmp,
@@ -126,8 +126,22 @@ impl Processor {
         );
     }
 
+    pub fn find_all_jumps(program: &Program) -> Vec<usize> {
+        let mut v = vec![];
+        let mut i = 0;
+        for instruction in program {
+            if instruction.operator == Operator::Jmp {
+                v.push(i);
+            }
+            i += 1
+        }
+        v
+    }
+
     pub fn run(&mut self, program: &Program) -> Result<Option<Accumulator>, RuntimeError> {
         let mut visited = HashSet::new();
+        self.accumulator = 0;
+        self.instruction_pointer = 0;
 
         loop {
             if visited.contains(&self.instruction_pointer) {
@@ -308,5 +322,22 @@ mod tests {
 
         assert_eq!(1, program.len());
         assert_eq!(0, prog2.len());
+    }
+
+    // well... after this many days it's time to resort to the brute force scan ._.
+    #[test]
+    fn test_find_jumps() {
+        let program = vec![Instruction {
+            operator: Operator::Jmp,
+            operand: 1,
+        }];
+
+        let all_jumps = Processor::find_all_jumps(&program);
+        assert_eq!(vec![0], all_jumps);
+
+        let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
+        let program = Instruction::parse(&lines);
+        let all_jumps = Processor::find_all_jumps(&program.unwrap());
+        assert_eq!(vec![2, 4, 7], all_jumps);
     }
 }
