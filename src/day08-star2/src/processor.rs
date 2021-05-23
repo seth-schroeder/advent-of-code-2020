@@ -25,15 +25,15 @@ pub enum RuntimeError {
 
 #[derive(Debug, Clone)]
 pub struct Instruction {
-    operator: Operator,
-    operand: i32,
+    pub operator: Operator,
+    pub operand: i32,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, PartialEq)]
 pub struct JumpState {
-    index: usize,
+    pub index: usize,
     pub accumulator: Accumulator,
 }
 
@@ -81,7 +81,7 @@ pub type Accumulator = i32;
 pub struct Processor {
     pub accumulator: Accumulator,
     pub jumps: Vec<JumpState>,
-    instruction_pointer: usize,
+    pub instruction_pointer: usize,
     steps: usize,
 }
 
