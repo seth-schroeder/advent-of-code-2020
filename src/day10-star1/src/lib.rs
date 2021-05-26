@@ -7,44 +7,29 @@ use std::io;
 
 pub fn run() {
     if let Ok(adapters) = make_adapters() {
-        // eprintln!("{:#?}", adapters);
-        eprintln!("{:#?}, {:#?}",
-                  compute_differences(&adapters),
-                  group_differences(&compute_differences(&adapters)));
-
+        let grouped_differences = compute_differences(&adapters);
+        let ones = grouped_differences[&1];
+        let threes = grouped_differences[&3];
+        eprintln!("{} * {} = {}", ones, threes, ones * threes);
     }
 }
 
-fn group_differences(diffs: &[u32]) -> HashMap<u32, u32> {
+fn compute_differences(adapters: &[Adapter]) -> HashMap<u32, u32> {
     let mut h: HashMap<u32, u32> = HashMap::new();
 
-    for diff in diffs {
-        *h.entry(*diff).or_insert(0) += 1;
+    for (i, adapter) in adapters.iter().enumerate() {
+        if let Some(next_adapter) = adapters.get(i + 1) {
+            let difference = next_adapter.joltage - adapter.joltage;
+
+            *h.entry(difference).or_insert(0) += 1;
+        }
     }
 
     h
 }
 
-fn compute_differences(adapters: &[Adapter]) -> Vec<u32> {
-    let mut i = 0;
-    let mut all_gaps = Vec::new();
-
-    for adapter in adapters {
-        eprintln!("{}: {:?}", i, adapter);
-
-        if let Some(next_adapter) = adapters.get(i + 1) {
-            let difference = next_adapter.joltage - adapter.joltage;
-            eprintln!("\t{}, {:?}", difference, next_adapter);
-            all_gaps.push(difference);
-        }
-        i += 1;
-    }
-
-    all_gaps
-}
-
 fn make_adapters() -> Result<Vec<Adapter>, ()> {
-    let mut joltages = read_test_data("day10-star1/smallest.txt").unwrap();
+    let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
     let mut adapters = Vec::with_capacity(joltages.len() + 2);
 
     // pretending the outlet is a 0 joltage device, let's see how that goes.
