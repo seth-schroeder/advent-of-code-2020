@@ -1,42 +1,38 @@
 mod adapter;
 use adapter::Adapter;
 use petgraph::algo;
-use petgraph::graphmap::DiGraphMap;
+use petgraph::graph::{DiGraph, NodeIndex};
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 
-type AdapterGraph = DiGraphMap<u32, u32>;
-type AdapterPath = Vec<u32>;
+type AdapterGraph = DiGraph<u32, u32>;
+type JoltageNodeIndexMap = HashMap<u32, NodeIndex>;
 
 pub fn run() {
     if let Ok(adapters) = make_adapters() {
-        let g = connect_adapters(&adapters);
+        let (g, m) = connect_adapters(&adapters);
 
-        mess_with_topo(&g);
-        println!("well, how about {}", jump(&g, &adapters));
-        let ways = algo::all_simple_paths(g, 0, to: G::NodeId, min_intermediate_nodes: usize, max_intermediate_nodes: Option<usize>, )
+        println!("{}", serde_json::to_string_pretty(&g).unwrap());
+        println!("{}", serde_json::to_string_pretty(&m).unwrap());
+
+
+        let wall = adapters.first().expect("the wall?");
+        let device = adapters.last().expect("the phone?");
+        let ways = algo::all_simple_paths::<Vec<_>, _>(
+            &g,
+            *m.get(&wall.joltage).unwrap(),
+            *m.get(&device.joltage).unwrap(),
+            0,
+            None,
+        );
+        println!("how about {} ways?", ways.count());
     }
 }
 
-fn dive(g: &AdapterGraph, v: AdapterPath, node: u32) {
-    // for edge in g.edges(node).iter() {
-    // }
-    0
-}
-
-fn jump(g: &AdapterGraph, adapters: &[Adapter]) -> u32 {
-    let mut v = AdapterPath::new();
-    dive(g, v, 0);
-    0
-}
-
-fn mess_with_topo(g: &AdapterGraph) {
-    let topo = algo::toposort(&g, None);
-    eprintln!("topo: {:#?}", topo);
-}
-
-fn connect_adapters(adapters: &[Adapter]) -> AdapterGraph {
-    let mut g = DiGraphMap::new();
+fn connect_adapters(adapters: &[Adapter]) -> (AdapterGraph, JoltageNodeIndexMap) {
+    let mut g = DiGraph::new();
+    let mut m = JoltageNodeIndexMap::new();
 
     for adapter_a in adapters {
         for adapter_b in adapters {
@@ -55,21 +51,42 @@ fn connect_adapters(adapters: &[Adapter]) -> AdapterGraph {
                 continue;
             }
 
-            if !g.contains_edge(smaller_joltage, bigger_joltage) {
-                // eprintln!(
-                //     "adding edge: {:?} -> {:?} ({})",
-                //     smaller_joltage, bigger_joltage, difference
-                // );
-                g.add_edge(smaller_joltage, bigger_joltage, difference);
+            // has to be some or_insert mojo here
+            let bigger_node_index = match m.get(&bigger_joltage) {
+                Some(idx) => *idx,
+                None => {
+                    let idx = g.add_node(bigger_joltage);
+                    m.insert(bigger_joltage, idx);
+                    idx
+                }
+            };
+
+            // look ma, duplicate code
+            // look ma, duplicate code
+            let smaller_node_index = match m.get(&smaller_joltage) {
+                Some(idx) => *idx,
+                None => {
+                    let idx = g.add_node(smaller_joltage);
+                    m.insert(smaller_joltage, idx);
+                    idx
+                }
+            };
+
+            if !g.contains_edge(smaller_node_index, bigger_node_index) {
+                eprintln!(
+                    "adding edge: {:?} -> {:?} ({})",
+                    smaller_joltage, bigger_joltage, difference
+                );
+                g.add_edge(smaller_node_index, bigger_node_index, difference);
             }
         }
     }
 
-    g
+    (g, m)
 }
 
 fn make_adapters() -> Result<Vec<Adapter>, ()> {
-    let mut joltages = read_test_data("day10-star1/smallest.txt").unwrap();
+    let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
     let mut adapters = Vec::with_capacity(joltages.len() + 2);
 
     // pretending the outlet is a 0 joltage device, let's see how that goes.
