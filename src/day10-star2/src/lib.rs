@@ -1,16 +1,41 @@
 mod adapter;
 use adapter::Adapter;
+use petgraph::algo;
 use petgraph::graphmap::DiGraphMap;
 use std::fs;
 use std::io;
 
+type AdapterGraph = DiGraphMap<u32, u32>;
+type AdapterPath = Vec<u32>;
+
 pub fn run() {
     if let Ok(adapters) = make_adapters() {
-        connect_adapters(&adapters);
+        let g = connect_adapters(&adapters);
+
+        mess_with_topo(&g);
+        println!("well, how about {}", jump(&g, &adapters));
+        let ways = algo::all_simple_paths(g, 0, to: G::NodeId, min_intermediate_nodes: usize, max_intermediate_nodes: Option<usize>, )
     }
 }
 
-fn connect_adapters(adapters: &[Adapter]) -> DiGraphMap<u32, u32> {
+fn dive(g: &AdapterGraph, v: AdapterPath, node: u32) {
+    // for edge in g.edges(node).iter() {
+    // }
+    0
+}
+
+fn jump(g: &AdapterGraph, adapters: &[Adapter]) -> u32 {
+    let mut v = AdapterPath::new();
+    dive(g, v, 0);
+    0
+}
+
+fn mess_with_topo(g: &AdapterGraph) {
+    let topo = algo::toposort(&g, None);
+    eprintln!("topo: {:#?}", topo);
+}
+
+fn connect_adapters(adapters: &[Adapter]) -> AdapterGraph {
     let mut g = DiGraphMap::new();
 
     for adapter_a in adapters {
@@ -31,10 +56,10 @@ fn connect_adapters(adapters: &[Adapter]) -> DiGraphMap<u32, u32> {
             }
 
             if !g.contains_edge(smaller_joltage, bigger_joltage) {
-                eprintln!(
-                    "adding edge: {:?} -> {:?} ({})",
-                    smaller_joltage, bigger_joltage, difference
-                );
+                // eprintln!(
+                //     "adding edge: {:?} -> {:?} ({})",
+                //     smaller_joltage, bigger_joltage, difference
+                // );
                 g.add_edge(smaller_joltage, bigger_joltage, difference);
             }
         }
