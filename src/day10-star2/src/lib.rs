@@ -1,8 +1,6 @@
 mod adapter;
 use adapter::Adapter;
-use petgraph::algo;
 use petgraph::graph::{DiGraph, NodeIndex};
-use petgraph::visit::Dfs;
 use std::collections::HashMap;
 use std::fs;
 use std::io;
@@ -10,16 +8,60 @@ use std::io;
 type AdapterGraph = DiGraph<u32, u32>;
 type JoltageNodeIndexMap = HashMap<u32, NodeIndex>;
 
+// too... tired... this is too slow and manual to be the right way
+fn joltage_for_node(h: &JoltageNodeIndexMap, i: NodeIndex) -> Option<u32> {
+    for (key, val) in h {
+        if *val == i {
+            return Some(*key);
+        }
+    }
+    None
+}
+
+fn dfs(
+    g: &AdapterGraph,
+    h: &JoltageNodeIndexMap,
+    i: NodeIndex,
+    v: &mut Vec<u32>,
+    islands: &mut u32,
+) {
+    // TODO a good way to deal with `Empty`
+    let mut island = true;
+
+    for howdy in g.neighbors(i) {
+        island = false;
+        let j = joltage_for_node(h, howdy).unwrap();
+        v.push(j);
+        dfs(g, h, howdy, v, islands);
+        v.pop();
+    }
+
+    if island {
+        // eprintln!("walked the path, now the journey is done: {:?}", v);
+        *islands += 1;
+        if *islands % 1_000_000 == 0 {
+            eprintln!("{} million islands", *islands / 1_000_000);
+        }
+    }
+}
+
 pub fn run() {
     if let Ok(adapters) = make_adapters() {
         let (g, m) = connect_adapters(&adapters);
 
-        println!("{}", serde_json::to_string_pretty(&g).unwrap());
+        // println!("{}", serde_json::to_string_pretty(&g).unwrap());
         // println!("{}", serde_json::to_string_pretty(&m).unwrap());
 
-
         let wall = adapters.first().expect("the wall?");
-        let device = adapters.last().expect("the phone?");
+        let wall_idx = m.get(&wall.joltage).unwrap();
+        // let device = adapters.last().expect("the phone?");
+        let mut path = Vec::new();
+        path.push(0);
+        let mut islands = 0;
+
+        dfs(&g, &m, *wall_idx, &mut path, &mut islands);
+        eprintln!("\nthere were {} islands", islands);
+
         // let ways = algo::all_simple_paths::<Vec<_>, _>(
         //     &g,
         //     *m.get(&wall.joltage).unwrap(),
@@ -84,10 +126,10 @@ fn connect_adapters(adapters: &[Adapter]) -> (AdapterGraph, JoltageNodeIndexMap)
             };
 
             if !g.contains_edge(smaller_node_index, bigger_node_index) {
-                eprintln!(
-                    "adding edge: {:?} -> {:?} ({})",
-                    smaller_joltage, bigger_joltage, difference
-                );
+                // eprintln!(
+                //     "adding edge: {:?} -> {:?} ({})",
+                //     smaller_joltage, bigger_joltage, difference
+                // );
                 g.add_edge(smaller_node_index, bigger_node_index, difference);
             }
         }
@@ -97,7 +139,7 @@ fn connect_adapters(adapters: &[Adapter]) -> (AdapterGraph, JoltageNodeIndexMap)
 }
 
 fn make_adapters() -> Result<Vec<Adapter>, ()> {
-    let mut joltages = read_test_data("day10-star1/smallest.txt").unwrap();
+    let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
     let mut adapters = Vec::with_capacity(joltages.len() + 2);
 
     // pretending the outlet is a 0 joltage device, let's see how that goes.
