@@ -2,6 +2,7 @@ mod adapter;
 use adapter::Adapter;
 use petgraph::algo;
 use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::visit::Dfs;
 use std::collections::HashMap;
 use std::fs;
 use std::io;
@@ -14,19 +15,29 @@ pub fn run() {
         let (g, m) = connect_adapters(&adapters);
 
         println!("{}", serde_json::to_string_pretty(&g).unwrap());
-        println!("{}", serde_json::to_string_pretty(&m).unwrap());
+        // println!("{}", serde_json::to_string_pretty(&m).unwrap());
 
 
         let wall = adapters.first().expect("the wall?");
         let device = adapters.last().expect("the phone?");
-        let ways = algo::all_simple_paths::<Vec<_>, _>(
-            &g,
-            *m.get(&wall.joltage).unwrap(),
-            *m.get(&device.joltage).unwrap(),
-            0,
-            None,
-        );
-        println!("how about {} ways?", ways.count());
+        // let ways = algo::all_simple_paths::<Vec<_>, _>(
+        //     &g,
+        //     *m.get(&wall.joltage).unwrap(),
+        //     *m.get(&device.joltage).unwrap(),
+        //     0,
+        //     None,
+        // );
+        // println!("how about {} ways?", ways.count());
+
+        // let mut dfs = Dfs::new(&g, *m.get(&wall.joltage).unwrap());
+        // while let Some(visited) = dfs.next(&g) {
+        //     // ewwwww
+        //     for (key, val) in &m {
+        //         if *val == visited {
+        //             eprintln!("{:#?}", key);
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -86,7 +97,7 @@ fn connect_adapters(adapters: &[Adapter]) -> (AdapterGraph, JoltageNodeIndexMap)
 }
 
 fn make_adapters() -> Result<Vec<Adapter>, ()> {
-    let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
+    let mut joltages = read_test_data("day10-star1/smallest.txt").unwrap();
     let mut adapters = Vec::with_capacity(joltages.len() + 2);
 
     // pretending the outlet is a 0 joltage device, let's see how that goes.
