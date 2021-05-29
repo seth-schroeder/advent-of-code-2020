@@ -7,3 +7,6 @@ edition = "2018"
 
 [dependencies]
 assert_matches = "1.5"
+num-integer = "0.1"
+
+# why can't assert_matches compile as a dev-dependency?
