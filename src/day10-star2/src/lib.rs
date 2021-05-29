@@ -1,159 +1,29 @@
-mod adapter;
-use adapter::Adapter;
-use petgraph::graph::{DiGraph, NodeIndex};
-use std::collections::HashMap;
+#[macro_use] extern crate assert_matches;
+
 use std::fs;
 use std::io;
 
-type AdapterGraph = DiGraph<u32, u32>;
-type JoltageNodeIndexMap = HashMap<u32, NodeIndex>;
-
-// too... tired... this is too slow and manual to be the right way
-fn joltage_for_node(h: &JoltageNodeIndexMap, i: NodeIndex) -> Option<u32> {
-    for (key, val) in h {
-        if *val == i {
-            return Some(*key);
-        }
-    }
-    None
-}
-
-fn dfs(
-    g: &AdapterGraph,
-    h: &JoltageNodeIndexMap,
-    i: NodeIndex,
-    v: &mut Vec<u32>,
-    islands: &mut u32,
-) {
-    // TODO a good way to deal with `Empty`
-    let mut island = true;
-
-    for howdy in g.neighbors(i) {
-        island = false;
-        let j = joltage_for_node(h, howdy).unwrap();
-        v.push(j);
-        dfs(g, h, howdy, v, islands);
-        v.pop();
-    }
-
-    if island {
-        // eprintln!("walked the path, now the journey is done: {:?}", v);
-        *islands += 1;
-        if *islands % 1_000_000 == 0 {
-            eprintln!("{} million islands", *islands / 1_000_000);
-        }
-    }
-}
-
 pub fn run() {
-    if let Ok(adapters) = make_adapters() {
-        let (g, m) = connect_adapters(&adapters);
-
-        // println!("{}", serde_json::to_string_pretty(&g).unwrap());
-        // println!("{}", serde_json::to_string_pretty(&m).unwrap());
-
-        let wall = adapters.first().expect("the wall?");
-        let wall_idx = m.get(&wall.joltage).unwrap();
-        // let device = adapters.last().expect("the phone?");
-        let mut path = Vec::new();
-        path.push(0);
-        let mut islands = 0;
-
-        dfs(&g, &m, *wall_idx, &mut path, &mut islands);
-        eprintln!("\nthere were {} islands", islands);
-
-        // let ways = algo::all_simple_paths::<Vec<_>, _>(
-        //     &g,
-        //     *m.get(&wall.joltage).unwrap(),
-        //     *m.get(&device.joltage).unwrap(),
-        //     0,
-        //     None,
-        // );
-        // println!("how about {} ways?", ways.count());
-
-        // let mut dfs = Dfs::new(&g, *m.get(&wall.joltage).unwrap());
-        // while let Some(visited) = dfs.next(&g) {
-        //     // ewwwww
-        //     for (key, val) in &m {
-        //         if *val == visited {
-        //             eprintln!("{:#?}", key);
-        //         }
-        //     }
-        // }
-    }
-}
-
-fn connect_adapters(adapters: &[Adapter]) -> (AdapterGraph, JoltageNodeIndexMap) {
-    let mut g = DiGraph::new();
-    let mut m = JoltageNodeIndexMap::new();
-
-    for adapter_a in adapters {
-        for adapter_b in adapters {
-            if adapter_a == adapter_b {
-                continue;
-            }
-
-            let (smaller_joltage, bigger_joltage) = if adapter_a < adapter_b {
-                (adapter_a.joltage, adapter_b.joltage)
-            } else {
-                (adapter_b.joltage, adapter_a.joltage)
-            };
-
-            let difference = bigger_joltage - smaller_joltage;
-            if difference > 3 {
-                continue;
-            }
-
-            // has to be some or_insert mojo here
-            let bigger_node_index = match m.get(&bigger_joltage) {
-                Some(idx) => *idx,
-                None => {
-                    let idx = g.add_node(bigger_joltage);
-                    m.insert(bigger_joltage, idx);
-                    idx
-                }
-            };
-
-            // look ma, duplicate code
-            // look ma, duplicate code
-            let smaller_node_index = match m.get(&smaller_joltage) {
-                Some(idx) => *idx,
-                None => {
-                    let idx = g.add_node(smaller_joltage);
-                    m.insert(smaller_joltage, idx);
-                    idx
-                }
-            };
-
-            if !g.contains_edge(smaller_node_index, bigger_node_index) {
-                // eprintln!(
-                //     "adding edge: {:?} -> {:?} ({})",
-                //     smaller_joltage, bigger_joltage, difference
-                // );
-                g.add_edge(smaller_node_index, bigger_node_index, difference);
-            }
-        }
-    }
-
-    (g, m)
-}
-
-fn make_adapters() -> Result<Vec<Adapter>, ()> {
     let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
-    let mut adapters = Vec::with_capacity(joltages.len() + 2);
+}
 
-    // pretending the outlet is a 0 joltage device, let's see how that goes.
-    joltages.push(0);
-    joltages.sort_unstable();
-
-    for joltage in joltages {
-        adapters.push(Adapter { joltage });
+fn count_breakables(adapters: &[u32]) -> Option<u32> {
+    if adapters.is_empty() {
+        return None
     }
 
-    // ... and hey, the device has-a adapter soooooo
-    adapters.push(Adapter::make_device(&adapters).unwrap());
+    Some(0)
+}
 
-    Ok(adapters)
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_breakable_edge_cases() {
+        let empty = vec![];
+        assert_matches!(count_breakables(&empty), None);
+    }
 }
 
 // one month and still the same basic code o.O
