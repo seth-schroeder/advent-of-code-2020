@@ -2,7 +2,7 @@
 extern crate assert_matches;
 
 use num_integer;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
 use std::fs;
 use std::io;
@@ -10,20 +10,31 @@ use std::io;
 type Adapters = Vec<u32>;
 
 pub fn run() {
-    let v = prompt_for_test_data();
+    // let v = prompt_for_test_data();
+    let v = read_test_data("day10-star1/largest.txt").unwrap();
     let h = eighty_third_attempt(&v);
     let k = consecutive_integer_keys(&h);
+    let group_sizes: Vec<u32> = k.iter().map(|g| u32::try_from(g.1).unwrap()).collect();
+    let breakable_group_contents: Vec<u32> = group_sizes
+        .iter()
+        .map(|g| if g < &3 { 1 } else { *g - 2 })
+        .collect();
+    let coefficients: Vec<u32> = breakable_group_contents
+        .iter()
+        .map(|g| sum_the_mfn_coefficients(*g))
+        .collect();
+    let unique_paths: u32 = coefficients.iter().sum();
 
     println!("Working with {:?}", h);
     println!("and the keys? -> {:#?}", k);
-
-    // let groups = group_it_up(&v);
-    // println!("\n seeing these groups: {:?}", groups);
-    // println!("\n ... and the sum of the coefficients is: {}", group_sum(&groups));
+    println!("group_sizes => {:?}", group_sizes);
+    println!("breakable_group_contents => {:?}", breakable_group_contents);
+    println!("coefficients => {:?}", coefficients);
+    println!("unique paths => {:?}", unique_paths);
 }
 
-fn eighty_third_attempt(adapters: &Adapters) -> HashMap<usize, bool> {
-    let mut h: HashMap<usize, bool> = HashMap::with_capacity(adapters.len());
+fn eighty_third_attempt(adapters: &Adapters) -> BTreeMap<usize, bool> {
+    let mut h: BTreeMap<usize, bool> = BTreeMap::new();
 
     for adapter in adapters {
         h.insert(usize::try_from(*adapter).unwrap(), true);
@@ -46,7 +57,7 @@ fn eighty_third_attempt(adapters: &Adapters) -> HashMap<usize, bool> {
     h
 }
 
-fn consecutive_integer_keys(h: &HashMap<usize, bool>) -> Vec<(usize, usize)> {
+fn consecutive_integer_keys(h: &BTreeMap<usize, bool>) -> Vec<(usize, usize)> {
     let mut v = Vec::new();
 
     let last = h.keys().max().unwrap();
@@ -84,10 +95,6 @@ fn consecutive_integer_keys(h: &HashMap<usize, bool>) -> Vec<(usize, usize)> {
 
     v
 }
-
-// fn group_sum(g: &Groups) -> u32 {
-//     g.iter().map(|group| sum_the_mfn_coefficients(*group)).sum()
-// }
 
 fn sum_the_mfn_coefficients(n: u32) -> u32 {
     let mut v = Vec::new();
