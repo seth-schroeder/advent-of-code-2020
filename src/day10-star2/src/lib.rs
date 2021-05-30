@@ -12,7 +12,10 @@ type Adapters = Vec<u32>;
 pub fn run() {
     let v = prompt_for_test_data();
     let h = eighty_third_attempt(&v);
+    let k = consecutive_integer_keys(&h);
+
     println!("Working with {:?}", h);
+    println!("and the keys? -> {:#?}", k);
 
     // let groups = group_it_up(&v);
     // println!("\n seeing these groups: {:?}", groups);
@@ -30,7 +33,8 @@ fn eighty_third_attempt(adapters: &Adapters) -> HashMap<usize, bool> {
     // now it's just a mess that wor-- has room for improvement
     let last = usize::try_from(*adapters.iter().max().unwrap()).unwrap();
 
-    let mut i: usize = 0;
+    // this 1 is really strange... in the problem the adapters start at index 1.
+    let mut i: usize = 1;
 
     while i < last {
         if !h.contains_key(&i) {
@@ -40,6 +44,45 @@ fn eighty_third_attempt(adapters: &Adapters) -> HashMap<usize, bool> {
     }
 
     h
+}
+
+fn consecutive_integer_keys(h: &HashMap<usize, bool>) -> Vec<(usize, usize)> {
+    let mut v = Vec::new();
+
+    let last = h.keys().max().unwrap();
+    let mut i = 1; // adapters start at index 1
+
+    let mut group_min_index = None;
+    let mut group_len = 0;
+
+    while i <= *last {
+        match h.get(&i) {
+            Some(true) => {
+                if group_len == 0 {
+                    group_min_index = Some(i);
+                }
+
+                group_len += 1;
+            }
+            Some(false) => {
+                if group_len > 0 {
+                    v.push((group_min_index.unwrap(), group_len));
+                    group_len = 0;
+                    group_min_index = None;
+                }
+            }
+            None => panic!("unpossible!"),
+        }
+
+        i += 1;
+    }
+
+    // did we end in a group?
+    if group_len > 0 {
+        v.push((group_min_index.unwrap(), group_len));
+    }
+
+    v
 }
 
 // fn group_sum(g: &Groups) -> u32 {
