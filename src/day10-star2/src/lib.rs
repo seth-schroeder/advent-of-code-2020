@@ -2,121 +2,60 @@
 extern crate assert_matches;
 
 use num_integer;
+use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::fs;
 use std::io;
 
 type Adapters = Vec<u32>;
-type Groups = Vec<u32>;
-
-const WINDOW: u32 = 3;
 
 pub fn run() {
     let v = prompt_for_test_data();
-    let v = prep_data(&v);
-    println!("Working with {:?}", v);
+    let h = eighty_third_attempt(&v);
+    println!("Working with {:?}", h);
 
-    let groups = group_it_up(&v);
-    println!("\n seeing these groups: {:#?}, {}", groups, groups.len());
+    // let groups = group_it_up(&v);
+    // println!("\n seeing these groups: {:?}", groups);
+    // println!("\n ... and the sum of the coefficients is: {}", group_sum(&groups));
 }
 
-fn prep_data(data: &Adapters) -> Adapters {
-    let mut clean_data = Adapters::with_capacity(data.len() + 2);
+fn eighty_third_attempt(adapters: &Adapters) -> HashMap<usize, bool> {
+    let mut h: HashMap<usize, bool> = HashMap::with_capacity(adapters.len());
 
-    clean_data.clone_from(data);
-    clean_data.push(0);
-    clean_data.sort_unstable();
-
-    clean_data.push(clean_data.iter().max().unwrap() + 3);
-
-    clean_data
-}
-
-fn group_it_up(data: &Adapters) -> Groups {
-    let mut g = Groups::new();
-
-    let mut group_min_val = 0;
-    let mut last_val = 0;
-    let mut idx = 0;
-
-    loop {
-        if idx >= data.len() {
-            break;
-        }
-
-        let current = *data.get(idx).unwrap();
-        println!(
-            "cur: {}, gmv: {}, lv: {}, idx: {}, #groups: {}",
-            current,
-            group_min_val,
-            last_val,
-            idx,
-            g.len()
-        );
-
-        if current == last_val + 1 {
-            last_val = current;
-        } else {
-            println!("starting a group at {}", idx);
-            if idx > 0 {
-                println!("not the first group");
-                let group_size = last_val - group_min_val + 1;
-                g.push(group_size);
-            }
-            group_min_val = current;
-            last_val = current;
-        }
-
-        idx += 1
+    for adapter in adapters {
+        h.insert(usize::try_from(*adapter).unwrap(), true);
     }
 
-    // finish up the trailing group
-    g.push(last_val - group_min_val + 1);
+    // a month ago this line would have been a mystery.
+    // now it's just a mess that wor-- has room for improvement
+    let last = usize::try_from(*adapters.iter().max().unwrap()).unwrap();
 
-    g
-}
+    let mut i: usize = 0;
 
-// now I'm really caffeinated and the dog needs to walk soon
-fn fuckit_too_early_comma_just_count_the_breakables(adapters: &[u32]) -> u32 {
-    // 'breakable' probably comes from picross3d
-    let mut breakable = 0;
-
-    // the wall is unbreakable, don't look before the wall lest ye suffer runtime usize conversion errors
-    let mut i = 1;
-
-    loop {
-        if let Some(previous_adapter) = adapters.get(i - 1) {
-            if let Some(current_adapter) = adapters.get(i) {
-                if let Some(next_adapter) = adapters.get(i + 1) {
-                    let gap = next_adapter - previous_adapter;
-                    if gap < WINDOW {
-                        eprintln!(
-                            "{} is breakable: {} <- {}:{}:{}",
-                            current_adapter, gap, previous_adapter, current_adapter, next_adapter
-                        );
-                        breakable += 1;
-                    }
-                }
-            }
-        } else {
-            break;
+    while i < last {
+        if !h.contains_key(&i) {
+            h.insert(i, false);
         }
-
         i += 1;
     }
 
-    breakable
+    h
 }
+
+// fn group_sum(g: &Groups) -> u32 {
+//     g.iter().map(|group| sum_the_mfn_coefficients(*group)).sum()
+// }
 
 fn sum_the_mfn_coefficients(n: u32) -> u32 {
     let mut v = Vec::new();
-    let mut k = 0;
+    let mut k = 1;
 
     while k <= n {
         v.push(num_integer::binomial(n, k));
         k += 1;
     }
 
-    eprintln!("{:#?}", v);
+    // eprintln!("{:#?}", v);
     v.iter().sum()
 }
 
@@ -124,29 +63,21 @@ fn sum_the_mfn_coefficients(n: u32) -> u32 {
 mod tests {
     use super::*;
 
+    // struggling with the leap from node indexes to node group counts.
+    // let's take it through some intermediate steps
+
+    // first up, denormalize into contiguous boolean groups
     #[test]
-    fn test_ftecjctb() {
-        let input = vec![];
-        assert_eq!(0, fuckit_too_early_comma_just_count_the_breakables(&input));
+    fn test_boolify() {
+        let input = vec![4, 1, 3, 7];
+        let output = eighty_third_attempt(&input);
+        println!("{:#?}", output);
 
-        let mut input = read_test_data("day10-star1/smallest.txt").unwrap();
-        input.sort_unstable();
-        input.insert(0, 0);
-        input.push(input.last().unwrap() + 3);
-        let output = fuckit_too_early_comma_just_count_the_breakables(&input);
-        assert_eq!(3, output);
-
-        assert_eq!(8, sum_the_mfn_coefficients(output));
-
-        let mut input = read_test_data("day10-star1/exp.txt").unwrap();
-        input.sort_unstable();
-        input.insert(0, 0);
-        input.push(input.last().unwrap() + 3);
-        eprintln!("input = {:?}", input);
-        let output = fuckit_too_early_comma_just_count_the_breakables(&input);
-        eprintln!("found {} breakables in medium", output);
-
-        assert_eq!(19208, sum_the_mfn_coefficients(output));
+        assert_eq!(output.get(&0), Some(&false));
+        assert_eq!(output.get(&1), Some(&true));
+        assert_eq!(output.get(&2), Some(&false));
+        assert_eq!(output.get(&3), Some(&true));
+        assert_eq!(output.get(&4), Some(&true));
     }
 }
 
