@@ -57,6 +57,22 @@ fn now_it_works_ok_fine(v: &[&[u32]]) {
     });
 }
 
+fn enslice(v: &Vec<Vec<u32>>) -> Vec<&[u32]> {
+    let mut slices = Vec::new();
+
+    for slice in v {
+        slices.push(&slice[..])
+    }
+
+    slices
+}
+
+fn a_more_realistic_and_currently_failing_example() {
+    let v = vec![vec![1,2], vec![3,4], vec![5,6]];
+    let s = enslice(&v);
+    now_it_works_ok_fine(&s[..]);
+}
+
 pub fn run_examples() {
     // compiles, not dynamic enough
     four_products();
@@ -65,7 +81,7 @@ pub fn run_examples() {
     // dynamic but unwanted output
     two_products();
 
-    // does_not_compile();
+    // this was so close, but not quite close enough
     let mut v = Vec::new();
     let one_two = vec![1,2];
     let three_four = vec![3,4];
@@ -74,4 +90,6 @@ pub fn run_examples() {
     v.push(&three_four[..]);
     v.push(&five_six[..]);
     now_it_works_ok_fine(&v);
+
+    a_more_realistic_and_currently_failing_example();
 }
