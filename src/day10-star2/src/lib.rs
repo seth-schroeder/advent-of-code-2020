@@ -2,6 +2,8 @@
 extern crate assert_matches;
 
 use num_integer;
+use permutator::HeapPermutationIterator;
+use permutator::{CartesianProduct, Combination, Permutation};
 use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
 use std::fs;
@@ -11,7 +13,7 @@ type Adapters = Vec<u32>;
 
 pub fn run() {
     // let v = prompt_for_test_data();
-    let v = read_test_data("day10-star1/largest.txt").unwrap();
+    let v = read_test_data("day10-star1/smallest.txt").unwrap();
     let h = eighty_third_attempt(&v);
     let k = consecutive_integer_keys(&h);
     let group_sizes: Vec<u32> = k.iter().map(|g| u32::try_from(g.1).unwrap()).collect();
@@ -25,10 +27,13 @@ pub fn run() {
     println!("group_sizes => {:?}", group_sizes);
     println!("breakable_group_contents => {:?}", breakable_group_contents);
 
-    println!("ze magic 010 ball says = {}", mind_the_ps_qs_ns_and_ks(&breakable_group_contents));
+    println!(
+        "ze magic 010 ball says = {}",
+        mind_the_ps_qs_ns_and_ks(&breakable_group_contents)
+    );
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Coefficient {
     n: u32,
     k: u32,
@@ -57,28 +62,68 @@ fn generate_coefficients(n: u32) -> Vec<Coefficient> {
 
     coefficients
 }
+
 fn mind_the_ps_qs_ns_and_ks(adapters: &Adapters) -> u32 {
     let mut coefficients = Vec::new();
 
     for adapter in adapters {
         if *adapter < 1 {
-            continue
+            continue;
         }
 
         coefficients.push(generate_coefficients(*adapter));
     }
     println!("coefficients: {:?}", coefficients);
 
-    let cfs_a = coefficients.pop().unwrap();
-    let cfs_b = coefficients.pop().unwrap();
-
     let mut sum = 0;
-    for cf_a in &cfs_a {
-        for cf_b in &cfs_b {
-            println!("cfa, cfb = {:?} = {}, {:?} = {}", cf_a, cf_a.value(), cf_b, cf_b.value());
-            sum += cf_a.value() * cf_b.value();
-        }
-    }
+
+    // let data = &mut [1,2,3];
+    // let mut slices = Vec::new();
+    // coefficients.into_iter().for_each(|c| {
+    //     slices.push(&coefficient);
+    // }
+
+    // compiles, does not work
+    permutator::cartesian_product(&[&coefficients[..]], |product| {
+        println!("product = {:?}", product);
+    });
+    permutator::cartesian_product(&[coefficients.as_slice()], |product| {
+        println!("as_s = {:?}", product);
+    });
+
+    // works, not dynamic
+    permutator::cartesian_product(
+        &[
+            &[
+                Coefficient { n: 2, k: 2 },
+                Coefficient { n: 2, k: 1 },
+                Coefficient { n: 2, k: 0 },
+            ],
+            &[Coefficient { n: 1, k: 1 }, Coefficient { n: 1, k: 0 }],
+        ],
+        |product| {
+            println!("iproduct = {:?}", product);
+        },
+    );
+
+    // works, more dynamic
+    permutator::cartesian_product(
+        &[&coefficients.get(0).unwrap(), &coefficients.last().unwrap()],
+        |p| {
+            println!("eh {:?}", p);
+        },
+    );
+
+    // permutator::cartesian_product(&[&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]], |product| {
+    //     println!("{:?}", product);
+    // });
+
+    // let cart = permutator::CartesianProductIterator::new(&[&coefficients[..]]);
+    // // println!("zoikes: {:?}", &coefficients[..]);
+
+    // for p in cart {
+    //     println!("hmm: {:?}", p);
+    // }
 
     sum
 }
