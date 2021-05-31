@@ -17,20 +17,70 @@ pub fn run() {
     let group_sizes: Vec<u32> = k.iter().map(|g| u32::try_from(g.1).unwrap()).collect();
     let breakable_group_contents: Vec<u32> = group_sizes
         .iter()
-        .map(|g| if g < &3 { 1 } else { *g - 2 })
+        .map(|g| if g < &3 { 0 } else { *g - 2 })
         .collect();
-    let coefficients: Vec<u32> = breakable_group_contents
-        .iter()
-        .map(|g| sum_the_mfn_coefficients(*g))
-        .collect();
-    let unique_paths: u32 = coefficients.iter().sum();
 
     println!("Working with {:?}", h);
     println!("and the keys? -> {:#?}", k);
     println!("group_sizes => {:?}", group_sizes);
     println!("breakable_group_contents => {:?}", breakable_group_contents);
-    println!("coefficients => {:?}", coefficients);
-    println!("unique paths => {:?}", unique_paths);
+
+    println!("ze magic 010 ball says = {}", mind_the_ps_qs_ns_and_ks(&breakable_group_contents));
+}
+
+#[derive(Debug)]
+struct Coefficient {
+    n: u32,
+    k: u32,
+}
+
+impl Coefficient {
+    fn value(&self) -> u32 {
+        num_integer::binomial(self.n, self.k)
+    }
+}
+
+fn generate_coefficients(n: u32) -> Vec<Coefficient> {
+    let mut coefficients = Vec::new();
+    let mut k = n;
+
+    // panic when n == 0?
+
+    loop {
+        coefficients.push(Coefficient { n, k });
+
+        if k == 0 {
+            break;
+        }
+        k -= 1;
+    }
+
+    coefficients
+}
+fn mind_the_ps_qs_ns_and_ks(adapters: &Adapters) -> u32 {
+    let mut coefficients = Vec::new();
+
+    for adapter in adapters {
+        if *adapter < 1 {
+            continue
+        }
+
+        coefficients.push(generate_coefficients(*adapter));
+    }
+    println!("coefficients: {:?}", coefficients);
+
+    let cfs_a = coefficients.pop().unwrap();
+    let cfs_b = coefficients.pop().unwrap();
+
+    let mut sum = 0;
+    for cf_a in &cfs_a {
+        for cf_b in &cfs_b {
+            println!("cfa, cfb = {:?} = {}, {:?} = {}", cf_a, cf_a.value(), cf_b, cf_b.value());
+            sum += cf_a.value() * cf_b.value();
+        }
+    }
+
+    sum
 }
 
 fn eighty_third_attempt(adapters: &Adapters) -> BTreeMap<usize, bool> {
