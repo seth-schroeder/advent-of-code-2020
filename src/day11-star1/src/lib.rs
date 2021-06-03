@@ -1,17 +1,12 @@
 use array2d::Array2D;
-use std::convert::TryFrom;
+// use std::convert::TryFrom;
 use std::fmt;
 use std::fs;
 use std::io;
 
 pub fn run() {
-    let first_round = read_test_data("day11-star1/smallest.txt").unwrap();
-    let next_round = lights_camera_action(&first_round);
-    println!(
-        "{}\n{}",
-        textify_seating_area(&first_round),
-        textify_seating_area(&next_round)
-    );
+    let first_round = read_test_data("day11-star1/actual.txt").unwrap();
+    println!("{}", roll_tape(&first_round),);
 }
 
 const MAX_NEIGHBORS: u8 = 3;
@@ -43,39 +38,30 @@ impl Seat {
     // moving a new Vec out seems really expensive
     fn adjacent_indices(x_y: (usize, usize), seats: &SeatingArea) -> Vec<(usize, usize)> {
         let mut v = Vec::new();
+
+        // "no need to unit test boundary conditions when mixing indices and counts"
+        // me, several hours ago.
         let (x, y) = x_y;
+        let x_min = if x == 0 { x } else { x - 1 };
+        let x_max = seats.num_rows().min(x + 2);
+        let y_min = if y == 0 { y } else { y - 1 };
+        let y_max = seats.num_columns().min(y + 2);
 
-        // it's normal for indices to be negative for this test
-        let ix = i32::try_from(x).unwrap();
-        let iy = i32::try_from(y).unwrap();
-        let x_min = 0.max(ix - 1);
-        let y_min = 0.max(iy - 1);
+        // eprintln!(
+        //     "aji {}..{}..{}, {}..{}..{}",
+        //     x_min, x, x_max, y_min, y, y_max
+        // );
 
-        // sending in zero seats is an error I am happy to let Rust detect in this context
-        let x_max = i32::try_from((seats.num_columns() - 1).min(x + 1)).unwrap();
-        let y_max = i32::try_from((seats.num_rows() - 1).min(y + 1)).unwrap();
-
-        eprintln!(
-            "aji ({}, {}) => ({}, {}), ({}, {})",
-            x, y, x_min, y_min, x_max, y_max
-        );
-
-        let mut at_y = y_min;
-        let mut at_x = x_min;
-
-        while at_y <= y_max {
-            while at_x <= x_max {
-                if (at_x, at_y) != (ix, iy) {
-                    eprintln!("inserting {:?}", (at_x, at_y));
-                    v.push((
-                        usize::try_from(at_x).unwrap(),
-                        usize::try_from(at_y).unwrap(),
-                    ));
+        // hello there, doubleplus extra time in Purgatory
+        for x_ in x_min..x_max {
+            for y_ in y_min..y_max {
+                if x_y == (x_, y_) {
+                    continue;
                 }
-                at_x += 1;
+
+                // eprintln!("aji inserting {:?} for {:?}", (x_, y_), x_y);
+                v.push((x_, y_));
             }
-            at_x = x_min;
-            at_y += 1;
         }
 
         v
@@ -95,6 +81,38 @@ fn textify_seating_area(seats: &SeatingArea) -> String {
     }
 
     s.join("\n")
+}
+
+// hmm the Hollywood metaphors are wan tonight
+fn roll_tape(seats: &SeatingArea) -> u32 {
+    let mut frames = 0;
+
+    // pushing and popping a one element vector is a 1am workaround for juggling ownership and borrowing in a loop
+    let mut v = vec![];
+
+    loop {
+        frames += 1;
+
+        if v.is_empty() {
+            v.push(lights_camera_action(seats));
+            continue;
+        }
+
+        let last_area = v.first().unwrap();
+        let this_area = lights_camera_action(&last_area);
+
+        if *last_area == this_area {
+            println!("\n");
+            break;
+        }
+
+        print!(".");
+        v.pop();
+        v.push(this_area);
+    }
+
+    eprintln!("It took {} frames", frames);
+    count_occupants(&v.pop().unwrap())
 }
 
 fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
@@ -133,11 +151,27 @@ fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
     next_round
 }
 
+fn count_occupants(seats: &SeatingArea) -> u32 {
+    let mut headcount = 0;
+
+    for row in seats.rows_iter() {
+        for col in row {
+            if let Seat::Full = col {
+                headcount += 1;
+            }
+        }
+    }
+
+    headcount
+}
+
 fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
     let mut headcount = 0;
     let to_visit = Seat::adjacent_indices(x_y, seats);
 
+    // eprintln!("(x_y) => {:?}, to_visit => {:?}, hc = {}", x_y, to_visit, headcount);
     for nx_ny in to_visit {
+        // eprintln!("alas poor {:?}", nx_ny);
         if let Seat::Full = seats[nx_ny] {
             headcount += 1;
         }
@@ -221,9 +255,17 @@ mod tests {
             "#LLLLLLLL#",
             "#.LLLLLL.L",
             "#.#LLLL.##",
-        ].join("\n");
+        ]
+        .join("\n");
 
         let third_round = lights_camera_action(&next_round);
+
+        println!(
+            "exp:\n{:?}\n\nact:\n{:?}",
+            expected,
+            textify_seating_area(&third_round)
+        );
+
         assert_eq!(expected, textify_seating_area(&third_round));
     }
 }
