@@ -209,5 +209,21 @@ mod tests {
         let first_round = read_test_data("day11-star1/smallest.txt").unwrap();
         let next_round = lights_camera_action(&first_round);
         assert_eq!(expected, textify_seating_area(&next_round));
+
+        let expected = vec![
+            "#.LL.L#.##",
+            "#LLLLLL.L#",
+            "L.L.L..L..",
+            "#LLL.LL.L#",
+            "#.LL.LL.LL",
+            "#.LLLL#.##",
+            "..L.L.....",
+            "#LLLLLLLL#",
+            "#.LLLLLL.L",
+            "#.#LLLL.##",
+        ].join("\n");
+
+        let third_round = lights_camera_action(&next_round);
+        assert_eq!(expected, textify_seating_area(&third_round));
     }
 }
