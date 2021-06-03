@@ -1,12 +1,13 @@
 use std::io;
 use std::fs;
 use std::fmt;
+use array2d::Array2D;
 
 pub fn run() {
     println!("yo");
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum Seat {
     Empty,
     Full,
@@ -24,7 +25,7 @@ impl fmt::Display for Seat {
 }
 
 // okay it's getting closer to time to make this into a local crate or something
-fn read_test_data(relative_file_name: &str) -> Result<Vec<Vec<Seat>>, io::Error> {
+fn read_test_data(relative_file_name: &str) -> Result<Array2D<Seat>, io::Error> {
     let path = fs::canonicalize(format!("../../input-data/{}", relative_file_name))?;
     let s = fs::read_to_string(path)?;
 
@@ -43,7 +44,7 @@ fn read_test_data(relative_file_name: &str) -> Result<Vec<Vec<Seat>>, io::Error>
         mv.push(v);
     }
 
-    Ok(mv)
+    Ok(Array2D::from_rows(&mv))
 }
 
 #[cfg(test)]
@@ -53,6 +54,7 @@ mod tests {
     #[test]
     fn test_display() {
         let v = read_test_data("day11-star1/smallest.txt").unwrap();
-        assert_eq!("L", format!("{}", v.first().unwrap().first().unwrap()));
+        println!("{:#?}", v);
+        assert_eq!("L", format!("{}", v[(0, 0)]));
     }
 }
