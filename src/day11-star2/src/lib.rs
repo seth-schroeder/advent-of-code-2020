@@ -1,4 +1,5 @@
 mod vector;
+mod cartesianarray2d;
 
 use array2d::Array2D;
 use std::convert::TryFrom;
@@ -93,6 +94,10 @@ fn roll_tape(seats: &SeatingArea) -> u32 {
     let mut v = vec![];
 
     loop {
+        if frames == 2 {
+            break
+        }
+
         frames += 1;
 
         if v.is_empty() {
@@ -119,38 +124,50 @@ fn roll_tape(seats: &SeatingArea) -> u32 {
 
 fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
     let mut next_round = seats.clone();
-    let mut x_y = (0, 0);
+    let mut x = 0;
+    let mut y = 0;
 
     // eprintln!("{:#?}", seats);
     // eprintln!("===============================================");
     // eprintln!("before\n{}", textify_seating_area(seats));
 
-    while (x_y).0 < seats.num_rows() {
-        while (x_y).1 < seats.num_columns() {
+    while x < seats.num_rows() {
+        while y < seats.num_columns() {
+            let x_y = (x, y);
             let neighbors = count_neighbors(x_y, seats);
-            // eprintln!("found {} neighbors for {:?}", neighbors, x_y);
-            let mut seat = seats[x_y];
+            eprintln!("found {} neighbors for {:?}", neighbors, x_y);
 
-            match seats[x_y] {
+            let new_seat = match seats[x_y] {
                 Seat::Full => {
-                    if neighbors > MAX_NEIGHBORS {
-                        seat = Seat::Empty;
+                    if neighbors <= MAX_NEIGHBORS {
+                        Seat::Full
+                    } else {
+                        Seat::Empty
                     }
                 }
                 Seat::Empty => {
                     if neighbors == 0 {
-                        seat = Seat::Full;
+                        Seat::Full
+                    } else {
+                        Seat::Empty
                     }
                 }
-                Seat::Floor => (),
+                Seat::Floor => Seat::Floor,
+            };
+
+            let seat = seats[x_y];
+            if seat == new_seat {
+                println!("same seat at {} -> {:?}", seat, x_y)
+            } else {
+                eprintln!("NEW  seat at {:?} from {} to {}", x_y, seats[x_y], new_seat);
             }
+            next_round[x_y] = new_seat;
+            println!("\n\n{}\n", textify_seating_area(&next_round));
 
-            next_round[x_y] = seat;
-
-            (x_y).1 += 1;
+            y += 1;
         }
-        (x_y).1 = 0;
-        (x_y).0 += 1;
+        y = 0;
+        x += 1;
     }
 
     eprintln!("\nafter\n{}", textify_seating_area(&next_round));
@@ -194,7 +211,7 @@ fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
                 usize::try_from(next_point.y).unwrap(),
             );
             if seats[next_x_y] == Seat::Full {
-                // eprintln!("found someone at {:?}", next_x_y);
+                eprintln!("found someone at {:?}", next_x_y);
                 headcount += 1;
                 break;
             }
