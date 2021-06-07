@@ -31,14 +31,14 @@ impl Compass {
 
     fn slope(orientation: &Compass) -> Slope {
         let (x, y) = match orientation {
-            Compass::North => (0, -1),
-            Compass::NorthEast => (1, -1),
+            Compass::North => (0, 1),
+            Compass::NorthEast => (1, 1),
             Compass::East => (1, 0),
-            Compass::SouthEast => (1, 1),
-            Compass::South => (0, 1),
-            Compass::SouthWest => (-1, 1),
-            Compass::West => (0, -1),
-            Compass::NorthWest => (-1, -1),
+            Compass::SouthEast => (1, -1),
+            Compass::South => (0, -1),
+            Compass::SouthWest => (-1, -1),
+            Compass::West => (-1, 0),
+            Compass::NorthWest => (-1, 1),
         };
 
         Slope { x, y }
@@ -118,7 +118,7 @@ mod tests {
         let point = Point { x: 1, y: 1 };
         let path = grid.path(&point, &Compass::North);
         assert_eq!(1, path.len());
-        assert_eq!(Point { x: 1, y: 0 }, *path.first().unwrap());
+        assert_eq!(Point { x: 1, y: 2 }, *path.first().unwrap());
     }
 
     #[test]

@@ -1,7 +1,8 @@
-mod vector;
 mod cartesianarray2d;
+mod vector;
 
 use array2d::Array2D;
+use cartesianarray2d::CartesianArray2D;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fs;
@@ -21,7 +22,7 @@ enum Seat {
     Floor,
 }
 
-type SeatingArea = Array2D<Seat>;
+type SeatingArea = CartesianArray2D<Seat>;
 
 impl fmt::Display for Seat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -71,16 +72,23 @@ impl Seat {
     }
 }
 
-// hello zeeeero abstraction or organization... excuse = late
 fn textify_seating_area(seats: &SeatingArea) -> String {
     let mut s = Vec::new();
+    let mut x = seats.num_columns() - 1;
 
-    for row in seats.rows_iter() {
+    loop {
         let mut r = Vec::new();
-        for seat in row {
+        let mut y = 0;
+        while y < seats.num_columns() {
+            let seat = seats[(x, y)];
             r.push(format!("{}", seat));
+            y += 1
         }
         s.push(r.join(""));
+        if x == 0 {
+            break
+        }
+        x -= 1;
     }
 
     s.join("\n")
@@ -95,7 +103,7 @@ fn roll_tape(seats: &SeatingArea) -> u32 {
 
     loop {
         if frames == 2 {
-            break
+            break;
         }
 
         frames += 1;
@@ -176,13 +184,17 @@ fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
 
 fn count_occupants(seats: &SeatingArea) -> u32 {
     let mut headcount = 0;
+    let mut x = 0;
+    let mut y = 0;
 
-    for row in seats.rows_iter() {
-        for col in row {
-            if let Seat::Full = col {
+    while x < seats.num_columns() {
+        while y < seats.num_rows() {
+            if let Seat::Full = seats[(x, y)] {
                 headcount += 1;
             }
+            y += 1;
         }
+        x += 1;
     }
 
     headcount
@@ -203,7 +215,7 @@ fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
     for orientation in vector::Compass::rose() {
         let path = grid.path(&point, &orientation);
         let mut i = 0;
-        // eprintln!("{:?} from {:?} path = {:#?}", orientation, point, path);
+        eprintln!("{:?} from {:?} path = {:#?}", orientation, point, path);
         while i < path.len() {
             let next_point = path.get(i).unwrap();
             let next_x_y = (
@@ -223,7 +235,7 @@ fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
 }
 
 // okay it's getting closer to time to make this into a local crate or something
-fn read_test_data(relative_file_name: &str) -> Result<Array2D<Seat>, io::Error> {
+fn read_test_data(relative_file_name: &str) -> Result<CartesianArray2D<Seat>, io::Error> {
     let path = fs::canonicalize(format!("../../input-data/{}", relative_file_name))?;
     let s = fs::read_to_string(path)?;
 
@@ -242,7 +254,9 @@ fn read_test_data(relative_file_name: &str) -> Result<Array2D<Seat>, io::Error> 
         mv.push(v);
     }
 
-    Ok(Array2D::from_rows(&mv))
+    Ok(CartesianArray2D {
+        backing_store: Array2D::from_rows(&mv),
+    })
 }
 
 ////////////////////////////////////////////////////////////////////////////////
