@@ -6,7 +6,7 @@ pub struct Compass {
 }
 
 #[derive(Debug, PartialEq)]
-enum Bearing {
+pub enum Bearing {
     North,
     East,
     South,
@@ -18,13 +18,13 @@ impl Compass {
         Compass { degree: 0 }
     }
 
-    fn rotate(&mut self, degrees: Degree) -> Degree {
+    pub fn rotate(&mut self, degrees: Degree) -> Degree {
         let input = degrees.rem_euclid(360);
         self.degree = (self.degree + input) % 360;
         self.degree
     }
 
-    fn bearing(&self) -> Bearing {
+    pub fn bearing(&self) -> Bearing {
         match self.degree {
             0 => Bearing::North,
             90 => Bearing::East,
@@ -73,5 +73,7 @@ mod tests {
         assert_eq!(c.bearing(), Bearing::West);
         c.rotate(90);
         assert_eq!(c.bearing(), Bearing::North);
+        c.rotate(-90);
+        assert_eq!(c.bearing(), Bearing::West);
     }
 }

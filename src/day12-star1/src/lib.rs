@@ -7,11 +7,16 @@ mod ship;
 
 pub fn run() {
     let lines = read_test_data("day12-star1/smallest.txt").unwrap();
+
     let mut instructions = vec![];
     for line in lines {
         instructions.push(compute::Instruction::parse(&line).unwrap());
     }
-    println!("{:#?}", instructions);
+
+    let mut ship = ship::Ship::new();
+    ship.fly(&instructions);
+
+    println!("ze distance might be {}", ship.manhattan_distance());
 }
 
 fn read_test_data(relative_file_name: &str) -> Result<Vec<String>, io::Error> {
