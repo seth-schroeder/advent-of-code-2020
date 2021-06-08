@@ -2,7 +2,6 @@ use crate::compass::Compass;
 use crate::compute;
 
 type Position = (i32, i32);
-
 pub struct Ship {
     compass: Compass,
     position: Position,
