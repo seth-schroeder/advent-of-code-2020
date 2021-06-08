@@ -6,7 +6,7 @@ mod compute;
 mod ship;
 
 pub fn run() {
-    let lines = read_test_data("day12-star1/smallest.txt").unwrap();
+    let lines = read_test_data("day12-star1/actual.txt").unwrap();
 
     let mut instructions = vec![];
     for line in lines {
