@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fs;
 use std::io;
 
-mod compass;
 mod compute;
 mod ship;
 
@@ -14,7 +13,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         instructions.push(compute::Instruction::parse(&line).unwrap());
     }
 
-    let ship = ship::Ship::new();
+    let mut ship = ship::Ship::new();
     ship.fly(&instructions);
 
     println!("ze distance might be {}", ship.manhattan_distance());

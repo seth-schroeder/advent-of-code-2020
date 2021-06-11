@@ -1,51 +1,67 @@
-use crate::compass;
 use crate::compute;
 
+#[derive(Debug)]
 pub struct Ship {
-    pub at: compute::Point,
-    pub waypoint: compute::Point,
-    pub compass: compass::Compass,
+    at: compute::Point,
+    waypoint_at: compute::Point,
+    waypoint_slope: compute::Point,
 }
 
 impl Ship {
     pub fn new() -> Self {
-        let mut compass = compass::Compass::new();
-        compass.rotate(90);
-
         Ship {
             at: (0, 0),
-            waypoint: (10, 1),
-            compass,
+            waypoint_at: (10, 1),
+            waypoint_slope: (10, 1),
         }
     }
 
-    pub fn fly(&self, instructions: &[compute::Instruction]) {
+    pub fn fly(&mut self, instructions: &[compute::Instruction]) {
         for instruction in instructions {
             match instruction.opcode {
-                compute::Opcode::MoveNorth => (),
-                compute::Opcode::MoveEast => (),
-                compute::Opcode::MoveSouth => (),
-                compute::Opcode::MoveWest => (),
-                compute::Opcode::MoveForward => (),
-                compute::Opcode::TurnLeft => (),
-                compute::Opcode::TurnRight => (),
+                compute::Opcode::MoveNorth => {
+                    self.waypoint_slope.1 += instruction.operand;
+                }
+                compute::Opcode::MoveEast => {
+                    self.waypoint_slope.0 += instruction.operand;
+                }
+                compute::Opcode::MoveSouth => {
+                    self.waypoint_slope.1 -= instruction.operand;
+                }
+                compute::Opcode::MoveWest => {
+                    self.waypoint_slope.0 -= instruction.operand;
+                }
+                compute::Opcode::MoveForward => {
+                    let delta = (
+                        instruction.operand * self.waypoint_slope.0,
+                        instruction.operand * self.waypoint_slope.1,
+                    );
+
+                    self.at.0 += delta.0;
+                    self.at.1 += delta.1;
+
+                    self.waypoint_at.0 += delta.0;
+                    self.waypoint_at.1 += delta.1;
+                }
+                compute::Opcode::TurnLeft => {
+                    self.waypoint_slope =
+                        compute::rotate_counterclockwise(self.waypoint_slope, instruction.operand)
+                            .unwrap();
+                    self.waypoint_at.0 += self.waypoint_slope.0;
+                    self.waypoint_at.1 += self.waypoint_slope.1;
+                }
+                compute::Opcode::TurnRight => {
+                    self.waypoint_slope =
+                        compute::rotate_clockwise(self.waypoint_slope, instruction.operand)
+                            .unwrap();
+                    self.waypoint_at.0 += self.waypoint_slope.0;
+                    self.waypoint_at.1 += self.waypoint_slope.1;
+                }
             }
         }
     }
 
-    pub fn manhattan_distance(&self) -> u32 { 0 }
-
-    pub fn waypoint_gap(&self) -> compute::Point {
-        (self.waypoint.0.abs(), self.waypoint.1.abs())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_obligatory() {
-        assert_eq!(true, !false);
+    pub fn manhattan_distance(&self) -> i32 {
+        self.at.0.abs() + self.at.1.abs()
     }
 }
