@@ -2,16 +2,24 @@ use std::error::Error;
 use std::fs;
 use std::io;
 
+mod compute;
+
 pub fn run() -> Result<(), Box<dyn Error>> {
     let (earliest, durations) =
-        parse_test_data(read_test_data("day13-star1/smallest.txt")?).unwrap();
+        parse_test_data(read_test_data("day13-star1/actual.txt")?).unwrap();
+
+    let h = compute::delta_hash(earliest, &durations);
+    let k = h.keys().min().unwrap();
+    let v = h.get(k).unwrap();
+
+    println!("(pulls {:?} out of a hat)", k * v);
 
     Ok(())
 }
 
-fn parse_test_data(data: Vec<String>) -> Option<(u32, Vec<u32>)> {
+fn parse_test_data(data: Vec<String>) -> Option<(i32, Vec<i32>)> {
     let earliest = data.first().unwrap().parse().unwrap();
-    let raw_durations: Vec<&str> = data.last().unwrap().split(",").collect();
+    let raw_durations: Vec<&str> = data.last().unwrap().split(',').collect();
 
     Some((
         earliest,
