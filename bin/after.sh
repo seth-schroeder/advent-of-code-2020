@@ -15,8 +15,11 @@ git fetch --all --prune --quiet || or_die fetch
 
 git rebase o/main || or_die rebase
 
-cd "src/${branch_name}"
+pushd "src/${branch_name}"
 cargo test || or_die tests failed
+popd
+
+echo $PWD
 
 git checkout main || or_die checkout
 
