@@ -19,8 +19,6 @@ pushd "src/${branch_name}"
 cargo test || or_die tests failed
 popd
 
-echo $PWD
-
 git checkout main || or_die checkout
 
 git merge --ff-only o/main "${branch_name}" || or_die merge
