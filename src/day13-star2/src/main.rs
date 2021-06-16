@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    day13_star2::run().unwrap()
 }

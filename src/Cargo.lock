@@ -164,10 +164,23 @@ name = "day13-star1"
 version = "0.1.0"
 
 [[package]]
+name = "day13-star2"
+version = "0.1.0"
+dependencies = [
+ "gcd",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+
+[[package]]
+name = "gcd"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c7cd301bf2ab11ae4e5bdfd79c221d97a25e46c089144a62ee9d09cb32d2b92"
 
 [[package]]
 name = "getrandom"
