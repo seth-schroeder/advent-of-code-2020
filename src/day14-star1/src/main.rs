@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    day14_star1::run();
 }
