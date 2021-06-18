@@ -55,6 +55,31 @@ impl Mask {
         }
         Ok(m)
     }
+
+    fn apply(&self, input: compute::Value) -> compute::Value {
+        let mut new_val = input;
+
+        for (k, v) in &self.mask {
+            let new_bit = match v {
+                Operation::One => 1,
+                Operation::Zero => 0,
+                Operation::AsIs => compute::nth_bit(input, *k)
+            };
+
+            match new_bit {
+                1 => new_val |= 1 << k,
+                0 => {
+                    let a = !new_val;
+                    let b = a | 1 << k;
+                    let c = !b;
+                    new_val = c;
+                }
+                _ => panic!("your base does not belong to us")
+            }
+        }
+
+        new_val
+    }
 }
 
 impl fmt::Display for Mask {
@@ -110,5 +135,14 @@ mod tests {
         let s = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X";
         let m = Mask::load(s).unwrap();
         assert_eq!(s, m.to_string());
+    }
+
+    #[test]
+    fn test_mask_binary_value() {
+        let s = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X";
+        let m = Mask::load(s).unwrap();
+        assert_eq!(73, m.apply(11));
+        assert_eq!(101, m.apply(101));
+        assert_eq!(64, m.apply(0));
     }
 }
