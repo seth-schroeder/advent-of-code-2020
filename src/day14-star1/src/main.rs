@@ -1,3 +1,3 @@
 fn main() {
-    day14_star1::run();
+    day14_star1::run().unwrap();
 }

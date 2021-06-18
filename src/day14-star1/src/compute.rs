@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 pub type Address = u64;
 pub type Value = u64;
-pub type Heap = Vec<Value>;
+pub type Heap = HashMap<Address, Value>;
 
 pub fn nth_bit(input: Value, n: Address) -> Value {
     let bit = input >> n & 1;
@@ -23,5 +25,4 @@ mod tests {
         assert_eq!(0, nth_bit(2, 0));
         assert_eq!(1, nth_bit(2, 1));
     }
-
 }

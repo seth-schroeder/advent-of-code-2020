@@ -173,6 +173,9 @@ dependencies = [
 [[package]]
 name = "day14-star1"
 version = "0.1.0"
+dependencies = [
+ "regex",
+]
 
 [[package]]
 name = "fixedbitset"

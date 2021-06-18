@@ -3,7 +3,8 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::fmt;
 
-struct Mask {
+#[derive(Debug, Clone)]
+pub struct Mask {
     mask: BTreeMap<compute::Address, Operation>,
 }
 
@@ -48,7 +49,7 @@ impl Mask {
         }
     }
 
-    fn load(s: &str) -> Result<Mask, &'static str> {
+    pub fn load(s: &str) -> Result<Mask, &'static str> {
         let mut m = Mask::new();
         for (i, c) in s.chars().rev().enumerate() {
             m.mask.insert(i as u64, Operation::try_from(c)?);
@@ -56,7 +57,7 @@ impl Mask {
         Ok(m)
     }
 
-    fn apply(&self, input: compute::Value) -> compute::Value {
+    pub fn apply(&self, input: compute::Value) -> compute::Value {
         let mut new_val = input;
 
         for (k, v) in &self.mask {
