@@ -5,8 +5,7 @@ use std::io;
 mod compute;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
-    let (earliest, durations) =
-        parse_test_data(read_test_data("day13-star1/actual.txt")?).unwrap();
+    let (earliest, durations) = parse_test_data(read_test_data("day13-star1/actual.txt")?).unwrap();
 
     let h = compute::delta_hash(earliest, &durations);
     let k = h.keys().min().unwrap();

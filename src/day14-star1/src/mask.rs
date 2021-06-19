@@ -64,7 +64,7 @@ impl Mask {
             let new_bit = match v {
                 Operation::One => 1,
                 Operation::Zero => 0,
-                Operation::AsIs => compute::nth_bit(input, *k)
+                Operation::AsIs => compute::nth_bit(input, *k),
             };
 
             match new_bit {
@@ -75,7 +75,7 @@ impl Mask {
                     let c = !b;
                     new_val = c;
                 }
-                _ => panic!("your base does not belong to us")
+                _ => panic!("your base does not belong to us"),
             }
         }
 

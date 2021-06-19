@@ -7,7 +7,7 @@
 pub fn mock_cartesian_product<'a, T, F>(sets: &'a [&[T]], mut cb: F)
 where
     T: 'a,
-for<'r> F: FnMut(&'r [&'a T]) + 'a,
+    for<'r> F: FnMut(&'r [&'a T]) + 'a,
 {
     permutator::cartesian_product(sets, cb);
 }
@@ -68,7 +68,7 @@ fn enslice(v: &Vec<Vec<u32>>) -> Vec<&[u32]> {
 }
 
 fn a_more_realistic_and_currently_failing_example() {
-    let v = vec![vec![1,2], vec![3,4], vec![5,6]];
+    let v = vec![vec![1, 2], vec![3, 4], vec![5, 6]];
     let s = enslice(&v);
     now_it_works_ok_fine(&s[..]);
 }
@@ -83,9 +83,9 @@ pub fn run_examples() {
 
     // this was so close, but not quite close enough
     let mut v = Vec::new();
-    let one_two = vec![1,2];
-    let three_four = vec![3,4];
-    let five_six = vec![5,6];
+    let one_two = vec![1, 2];
+    let three_four = vec![3, 4];
+    let five_six = vec![5, 6];
     v.push(&one_two[..]);
     v.push(&three_four[..]);
     v.push(&five_six[..]);

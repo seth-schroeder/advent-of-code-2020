@@ -4,7 +4,6 @@ pub fn next_multiple_after(target: i32, multiple: i32) -> i32 {
     target / multiple * multiple + multiple
 }
 
-
 fn lcm(lhs: u32, rhs: u32) -> u32 {
     lhs * rhs / lhs.gcd(rhs)
 }
@@ -33,7 +32,7 @@ mod tests {
             let m = 13 * n;
             if (m - 1) % 7 == 0 {
                 println!("{}x7 + 1 = {}x13 = {}", (m - 1) / 7, n, m);
-                break
+                break;
             }
 
             n += 1;
@@ -41,5 +40,4 @@ mod tests {
 
         assert_eq!(0, 1);
     }
-
 }

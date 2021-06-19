@@ -1,15 +1,18 @@
-use std::io;
-use std::fs;
 use std::error::Error;
+use std::fs;
+use std::io;
 
 mod compute;
+mod cpu;
 mod instruction;
 mod mask;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let lines = read_test_data("day14-star1/actual.txt")?;
-    let instructions = instruction::Program::parse(&lines)?;
-    let program = instruction::Program::new(instructions);
+    let instructions = instruction::Instruction::parse(&lines)?;
+    let mut cpu = cpu::Cpu::new();
+    cpu.run(instructions);
+    println!("everything added up to be {}", cpu.sum());
     Ok(())
 }
 

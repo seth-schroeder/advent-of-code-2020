@@ -39,7 +39,10 @@ fn run_trials(initial_program: &Program) -> Accumulator {
 fn run_trial(processor: &mut Processor, program: &Program) -> Option<Accumulator> {
     match processor.run(program) {
         Ok(_) => Some(processor.accumulator),
-        Err(RuntimeError::LoopDetected) => { eprintln!("*** LOOP"); None },
+        Err(RuntimeError::LoopDetected) => {
+            eprintln!("*** LOOP");
+            None
+        }
         Err(RuntimeError::InvalidInstructionIndex) => panic!("yo?"),
     }
 }

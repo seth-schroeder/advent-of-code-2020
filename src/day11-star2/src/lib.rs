@@ -71,16 +71,14 @@ fn scan_for_neighbors(board: &Board, x: usize, y: usize) -> u32 {
                 None => break,
                 Some(xh) => match xh.get(&usize::try_from(at_x).unwrap()) {
                     None => break,
-                    Some(seat) => {
-                        match seat {
-                            Seat::Floor => (),
-                            Seat::Occupied => {
-                                neighbors += 1;
-                                break;
-                            }
-                            Seat::Empty => break,
+                    Some(seat) => match seat {
+                        Seat::Floor => (),
+                        Seat::Occupied => {
+                            neighbors += 1;
+                            break;
                         }
-                    }
+                        Seat::Empty => break,
+                    },
                 },
             }
 
@@ -194,4 +192,3 @@ fn read_test_data(relative_file_name: &str) -> Result<Board, io::Error> {
 
     Ok(yh)
 }
-

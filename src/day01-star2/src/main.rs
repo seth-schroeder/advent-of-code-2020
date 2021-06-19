@@ -1,6 +1,6 @@
 mod test_data;
-use std::error::Error;
 use rand::seq::SliceRandom;
+use std::error::Error;
 
 const SUM: i32 = 2020;
 
