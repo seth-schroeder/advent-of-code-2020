@@ -57,7 +57,7 @@ impl Mask {
         Ok(m)
     }
 
-    pub fn find_floaters(&self) -> Vec<compute::Address> {
+    pub fn find_floaters(&self) -> Vec<compute::Value> {
         // filter_map maps, then filters? or am I missing something?
         self.mask
             .iter()
@@ -66,8 +66,9 @@ impl Mask {
             .collect()
     }
 
-    pub fn produce(&self) -> Vec<compute::Address> {
-        let mut addresses = vec![];
+    // pub fn mask_address(&self, compute::Address) -> Mask {
+    //     let mut m = Mask::load(&self.to_string());
+    //     let mut addresses = vec![];
 
         // for (k, v) in &self.mask {
         //     let new_bit = match v {
@@ -88,8 +89,8 @@ impl Mask {
         //     }
         // }
 
-        addresses
-    }
+    //     addresses
+    // }
 }
 
 impl fmt::Display for Mask {
@@ -149,6 +150,6 @@ mod tests {
     #[test]
     fn test_find_floaters() {
         let m = Mask::load("000000000000000000000000000000X1001X").unwrap();
-        assert_eq!(vec![0 , 5], m.find_floaters());
+        assert_eq!(vec![0, 5], m.find_floaters());
     }
 }
