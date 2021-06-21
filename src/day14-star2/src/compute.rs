@@ -5,17 +5,30 @@ pub type Address = u64;
 pub type Value = u64;
 pub type Heap = HashMap<Address, Value>;
 
-pub fn nth_bit(input: Value, n: Address) -> Value {
-    let bit = input >> n & 1;
-
-    if bit > 1 {
-        panic!("new bit is {}", bit);
+pub fn write_nth_bit(input: Value, n: Address, state: bool) -> Value {
+    match state {
+        true => input | 1 << n,
+        false => {
+            let a = !input;
+            let b = a | 1 << n;
+            !b
+        }
     }
-
-    bit
 }
 
-pub fn binary_permutations(v: Value) -> Value {
+pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<u8>> {
+    let num_bits = binary_permutations(floaters.len() as Value);
+    let mut v = Vec::with_capacity(num_bits as usize);
+
+    for num in binary_permutation_range(floaters) {
+        let arr = value_to_bit_array(num, floaters.len() as Value);
+        v.push(arr);
+    }
+
+    v
+}
+
+fn binary_permutations(v: Value) -> Value {
     let two: Value = 2;
     two.pow(v as u32)
 }
@@ -64,14 +77,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_nth_bit() {
-        assert_eq!(0, nth_bit(0, 0));
-        assert_eq!(1, nth_bit(1, 0));
-        assert_eq!(0, nth_bit(2, 0));
-        assert_eq!(1, nth_bit(2, 1));
-    }
-
-    #[test]
     fn test_binary_permutations() {
         assert_eq!(1, binary_permutations(0));
         assert_eq!(2, binary_permutations(1));
@@ -87,6 +92,18 @@ mod tests {
         assert_eq!(0..4, binary_permutation_range(&vec![0, 1]));
         assert_eq!(0..8, binary_permutation_range(&vec![0, 1, 2]));
         assert_eq!(0..16, binary_permutation_range(&vec![0, 1, 2, 3]));
+    }
+
+    #[test]
+    fn test_loose_the_permutations_of_war() {
+        dbg!(float_bit_array(
+            &loose_the_permutations_of_war(&vec![2, 5])[0],
+            &vec![5, 0]
+        ));
+        assert_eq!(
+            vec![vec![0, 0], vec![0, 1], vec![1, 0], vec![1, 1]],
+            loose_the_permutations_of_war(&vec![2, 5])
+        );
     }
 
     #[test]
@@ -111,5 +128,4 @@ mod tests {
         assert_eq!(None, h.get(&1));
         assert_eq!(&1, h.get(&0).unwrap());
     }
-
 }

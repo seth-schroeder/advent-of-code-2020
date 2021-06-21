@@ -57,40 +57,22 @@ impl Mask {
         Ok(m)
     }
 
-    pub fn find_floaters(&self) -> Vec<compute::Value> {
-        // filter_map maps, then filters? or am I missing something?
+    fn find_operations(&self, o: Operation) -> Vec<compute::Address> {
         self.mask
             .iter()
-            .filter(|(_, v)| &Operation::Float == *v)
+            .filter(|(_, v)| &o == *v)
             .map(|(k, _)| *k)
             .collect()
     }
 
-    // pub fn mask_address(&self, compute::Address) -> Mask {
-    //     let mut m = Mask::load(&self.to_string());
-    //     let mut addresses = vec![];
+    pub fn find_floaters(&self) -> Vec<compute::Address> {
+        self.find_operations(Operation::Float)
+    }
 
-        // for (k, v) in &self.mask {
-        //     let new_bit = match v {
-        //         Operation::One => 1,
-        //         Operation::Zero => 0,
-        //         Operation::AsIs => compute::nth_bit(input, *k),
-        //     };
-
-        //     match new_bit {
-        //         1 => new_val |= 1 << k,
-        //         0 => {
-        //             let a = !new_val;
-        //             let b = a | 1 << k;
-        //             let c = !b;
-        //             new_val = c;
-        //         }
-        //         _ => panic!("your base does not belong to us"),
-        //     }
-        // }
-
-    //     addresses
-    // }
+    // this ... function name... hurts to look at please look somewhere else
+    pub fn find_oners(&self) -> Vec<compute::Address> {
+        self.find_operations(Operation::One)
+    }
 }
 
 impl fmt::Display for Mask {
