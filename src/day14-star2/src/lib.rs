@@ -8,6 +8,7 @@ mod instruction;
 mod mask;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
+    // let lines = read_test_data("day14-star2/smallest.txt")?;
     let lines = read_test_data("day14-star2/smallest.txt")?;
     let instructions = instruction::Instruction::parse(&lines)?;
     let mut cpu = cpu::Cpu::new();

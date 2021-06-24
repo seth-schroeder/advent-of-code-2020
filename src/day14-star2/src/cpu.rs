@@ -5,6 +5,7 @@ use crate::mask;
 pub struct Cpu {
     heap: compute::Heap,
     mask: Option<mask::Mask>,
+    step: u32
 }
 
 impl Cpu {
@@ -12,6 +13,7 @@ impl Cpu {
         Cpu {
             heap: compute::Heap::new(),
             mask: None,
+            step: 0
         }
     }
 
@@ -23,7 +25,19 @@ impl Cpu {
             work = compute::write_nth_bit(work, bit, true);
         }
 
+        println!("u1: {:064b}\n  | 0000000000000000000000000000{:}\n  = {:064b}", a, self.mask.as_ref().unwrap().to_string(), work);
         work
+    }
+
+    fn trace(&self) {
+        let step = format!("{:04x}", self.step);
+        let mask = self.mask.as_ref().unwrap();
+        let floaters = mask.find_floaters();
+        println!("{}: {} => {:?}", step, mask, mask.find_floaters());
+        for permutation in compute::loose_the_permutations_of_war(&floaters) {
+            let floated = compute::float_bit_array(&permutation, &floaters);
+            println!("    {:?} => {:?}", permutation, floated);
+        }
     }
 
     pub fn alchemy(&self, a: compute::Address) -> Vec<compute::Address> {
@@ -33,6 +47,7 @@ impl Cpu {
         let floaters = mask.find_floaters();
         let mut new_addresses = Vec::new();
 
+        self.trace();
         for permutation in compute::loose_the_permutations_of_war(&floaters) {
             let floated = compute::float_bit_array(&permutation, &floaters);
             let mut new_address = addr;
@@ -42,6 +57,7 @@ impl Cpu {
             new_addresses.push(new_address);
         }
 
+        // println!("alchemy -- {}/{:064b} {:064b} m {} @ {:?}  => {:?}", a, a, addr, mask.to_string(), floaters, new_addresses);
         new_addresses
     }
 
@@ -54,11 +70,16 @@ impl Cpu {
             } else if let Some(memset) = instruction.memset {
                 let (address, value) = memset;
                 for addr in self.alchemy(address) {
+                    let is_old = self.heap.contains_key(&addr);
+                    if is_old {
+                        println!("{}({}) = {} = {}", self.sum(), is_old, addr, value);
+                    }
                     self.heap.insert(addr, value);
                 }
             } else {
                 panic!("bogus instruction detected!");
             }
+            self.step += 1;
         }
     }
 
