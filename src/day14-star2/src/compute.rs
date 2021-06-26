@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::ops;
 
 pub type Address = u64;
 pub type Value = u64;
-pub type Heap = HashMap<Address, Value>;
+pub type Heap = BTreeMap<Address, Value>;
 
 pub fn write_nth_bit(input: Value, n: Address, state: bool) -> Value {
     match state {
@@ -57,12 +57,12 @@ pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u8> {
     ba
 }
 
-pub fn float_bit_array(bits: &[u8], floaters: &[Value]) -> HashMap<Value, Value> {
+pub fn float_bit_array(bits: &[u8], floaters: &[Value]) -> BTreeMap<Value, Value> {
     if bits.len() != floaters.len() {
         panic!("yo that's not right");
     }
 
-    let mut h = HashMap::new();
+    let mut h = BTreeMap::new();
 
     for (i, float) in floaters.iter().enumerate() {
         let bit = bits[i] as Value;

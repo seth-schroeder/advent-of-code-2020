@@ -79,7 +79,7 @@ impl fmt::Display for Mask {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}",
+            "{:0>64}",
             self.mask
                 .values()
                 .map(|v| v.to_string())
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_mask_to_string() {
-        let s = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X";
+        let s = "0000000000000000000000000000XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X";
         let m = Mask::load(s).unwrap();
         assert_eq!(s, m.to_string());
     }
