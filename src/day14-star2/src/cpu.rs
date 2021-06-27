@@ -30,19 +30,6 @@ impl Cpu {
         work
     }
 
-    // fn trace(&self) {
-    //     let step = format!("{:04x}", self.step);
-    //     let mask = self.mask.as_ref().unwrap();
-    //     let floaters = mask.find_floaters();
-    //     // this is working okay
-    //     // println!("{}: {} => {:?}", step, mask, mask.find_floaters());
-    //     for permutation in compute::loose_the_permutations_of_war(&floaters) {
-    //         let floated = compute::float_bit_array(&permutation, &floaters);
-    //         // this is working okay
-    //         // println!("    {:?} => {:?}", permutation, floated);
-    //     }
-    // }
-
     pub fn alchemy(&self, a: compute::Address) -> Vec<compute::Address> {
         // this line was painful to sweat out
         let mask = self.mask.as_ref().unwrap();
@@ -79,19 +66,11 @@ impl Cpu {
             } else if let Some(memset) = instruction.memset {
                 let (address, value) = memset;
                 for addr in self.alchemy(address) {
-                    // ew this is awful
-                    let sum_pre = self.sum();
                     let old_val = self.heap.insert(addr, value).or(Some(0)).unwrap();
-                    let sum_post = self.sum();
-
                     let exp_delta = (old_val as i64 - value as i64).abs() as u64;
-                    let act_delta = (sum_post as i64 - sum_pre as i64).abs() as u64;
-                    if exp_delta != act_delta {
-                        panic!(
-                            "memset[{}] = {} changed {} by {} instead of {}",
-                            addr, value, sum_pre, act_delta, exp_delta
-                        );
-                    }
+                    println!("{:0>4}: heap[{:016x}]:\twas: {}\tis : {}\td  : {}",
+                             self.step, addr, old_val, value, exp_delta
+                    );
                 }
             } else {
                 panic!("bogus instruction detected!");

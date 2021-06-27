@@ -16,7 +16,7 @@ pub fn write_nth_bit(input: Value, n: Address, state: bool) -> Value {
     }
 }
 
-pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<u8>> {
+pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<u16>> {
     let num_bits = binary_permutations(floaters.len() as Value);
     let mut v = Vec::with_capacity(num_bits as usize);
 
@@ -37,14 +37,14 @@ pub fn binary_permutation_range(v: &[Value]) -> ops::Range<Value> {
     0..binary_permutations(v.len() as Value)
 }
 
-pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u8> {
+pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u16> {
     // eeeeeeeeeeek this smells
     if v > 2_u32.pow(num_bits as u32).into() {
         panic!("bit underflow!");
     }
 
     let mut ba = Vec::with_capacity(num_bits as usize);
-    let mut work = v as u8;
+    let mut work = v as u16;
     let mut i = num_bits;
 
     while i > 0 {
@@ -57,7 +57,7 @@ pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u8> {
     ba
 }
 
-pub fn float_bit_array(bits: &[u8], floaters: &[Value]) -> BTreeMap<Value, Value> {
+pub fn float_bit_array(bits: &[u16], floaters: &[Value]) -> BTreeMap<Value, Value> {
     if bits.len() != floaters.len() {
         panic!("yo that's not right");
     }
