@@ -52,7 +52,8 @@ impl Mask {
     pub fn load(s: &str) -> Result<Mask, &'static str> {
         let mut m = Mask::new();
         for (i, c) in s.chars().rev().enumerate() {
-            m.mask.insert(i as u64, Operation::try_from(c)?);
+            m.mask
+                .insert(u64::try_from(i).unwrap(), Operation::try_from(c)?);
         }
         Ok(m)
     }

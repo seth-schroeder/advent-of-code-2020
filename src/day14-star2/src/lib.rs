@@ -26,20 +26,3 @@ fn read_test_data(relative_file_name: &str) -> Result<Vec<String>, io::Error> {
     }
     Ok(v)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn inspect_mask() {
-        let m = mask::Mask::load("01001X0101110X0X10100001X0X0X1XX101X").unwrap();
-        let f = m.find_floaters();
-        for permutation in compute::loose_the_permutations_of_war(&f) {
-            let floated = compute::float_bit_array(&permutation, &f);
-            let v:u16 = permutation.iter().sum();
-            println!("({}):{:?} => {:?}", v, permutation, floated);
-        }
-        assert_eq!(false, true);
-    }
-}

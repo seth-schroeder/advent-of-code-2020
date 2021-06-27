@@ -53,7 +53,6 @@ impl Cpu {
             new_addresses.push(new_address);
         }
 
-        // println!("alchemy -- {}/{:064b} {:064b} m {} @ {:?}  => {:?}", a, a, addr, mask.to_string(), floaters, new_addresses);
         new_addresses
     }
 
@@ -66,11 +65,7 @@ impl Cpu {
             } else if let Some(memset) = instruction.memset {
                 let (address, value) = memset;
                 for addr in self.alchemy(address) {
-                    let old_val = self.heap.insert(addr, value).or(Some(0)).unwrap();
-                    let exp_delta = (old_val as i64 - value as i64).abs() as u64;
-                    println!("{:0>4}: heap[{:016x}]:\twas: {}\tis : {}\td  : {}",
-                             self.step, addr, old_val, value, exp_delta
-                    );
+                    self.heap.insert(addr, value).or(Some(0)).unwrap();
                 }
             } else {
                 panic!("bogus instruction detected!");

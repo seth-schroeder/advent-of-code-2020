@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::convert::TryFrom;
 use std::ops;
 
 pub type Address = u64;
@@ -16,12 +17,12 @@ pub fn write_nth_bit(input: Value, n: Address, state: bool) -> Value {
     }
 }
 
-pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<u16>> {
-    let num_bits = binary_permutations(floaters.len() as Value);
-    let mut v = Vec::with_capacity(num_bits as usize);
+pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<Value>> {
+    let num_bits = binary_permutations(Value::try_from(floaters.len()).unwrap());
+    let mut v = Vec::with_capacity(usize::try_from(num_bits).unwrap());
 
     for num in binary_permutation_range(floaters) {
-        let arr = value_to_bit_array(num, floaters.len() as Value);
+        let arr = value_to_bit_array(num, Value::try_from(floaters.len()).unwrap());
         v.push(arr);
     }
 
@@ -30,21 +31,16 @@ pub fn loose_the_permutations_of_war(floaters: &[Address]) -> Vec<Vec<u16>> {
 
 fn binary_permutations(v: Value) -> Value {
     let two: Value = 2;
-    two.pow(v as u32)
+    two.pow(u32::try_from(v).unwrap())
 }
 
 pub fn binary_permutation_range(v: &[Value]) -> ops::Range<Value> {
-    0..binary_permutations(v.len() as Value)
+    0..binary_permutations(Value::try_from(v.len()).unwrap())
 }
 
-pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u16> {
-    // eeeeeeeeeeek this smells
-    if v > 2_u32.pow(num_bits as u32).into() {
-        panic!("bit underflow!");
-    }
-
-    let mut ba = Vec::with_capacity(num_bits as usize);
-    let mut work = v as u16;
+pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<Value> {
+    let mut ba = Vec::with_capacity(usize::try_from(num_bits).unwrap());
+    let mut work = v;
     let mut i = num_bits;
 
     while i > 0 {
@@ -57,7 +53,7 @@ pub fn value_to_bit_array(v: Value, num_bits: Value) -> Vec<u16> {
     ba
 }
 
-pub fn float_bit_array(bits: &[u16], floaters: &[Value]) -> BTreeMap<Value, Value> {
+pub fn float_bit_array(bits: &[Value], floaters: &[Value]) -> BTreeMap<Value, Value> {
     if bits.len() != floaters.len() {
         panic!("yo that's not right");
     }
@@ -65,7 +61,7 @@ pub fn float_bit_array(bits: &[u16], floaters: &[Value]) -> BTreeMap<Value, Valu
     let mut h = BTreeMap::new();
 
     for (i, float) in floaters.iter().enumerate() {
-        let bit = bits[i] as Value;
+        let bit = bits[i];
         h.insert(*float, bit);
     }
 
@@ -116,6 +112,12 @@ mod tests {
         assert_eq!(vec![0, 0, 1], value_to_bit_array(1, 3));
         assert_eq!(vec![1, 1, 1], value_to_bit_array(7, 3));
         assert_eq!(vec![1, 0, 1], value_to_bit_array(5, 3));
+    }
+
+    #[test]
+    fn test_byte_overflow() {
+        // I will _________never________ use `as` again
+        assert_eq!(vec![1, 0, 0, 0, 0, 0, 0, 0, 0], value_to_bit_array(256, 9));
     }
 
     #[test]
