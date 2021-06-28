@@ -1,3 +1,5 @@
+mod compute;
+
 fn main() {
-    println!("Hello, world!");
+    day15_star1::run().unwrap();
 }
