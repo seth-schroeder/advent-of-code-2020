@@ -1,20 +1,4 @@
 use std::collections::HashMap;
-use std::fs;
-use std::io;
-
-// this implementation has got to be pretty bad...
-pub fn read_test_data() -> Result<Vec<String>, io::Error> {
-    let path = fs::canonicalize("../../input-data/day04-star1/batch.txt")?;
-    let s = std::fs::read_to_string(path)?;
-
-    let mut mv: Vec<String> = Vec::new();
-
-    for line in s.lines() {
-        mv.push(line.trim().to_string());
-    }
-
-    Ok(mv)
-}
 
 pub fn data_to_hashes(data: &[String]) -> Vec<HashMap<String, String>> {
     let mut v = Vec::with_capacity(data.len());

@@ -1,9 +1,8 @@
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let rows = test_data::data_to_lines(&test_data::read_test_data()?);
+    let lines: Vec<String> = lucio::get_input_data(3)?;
+    let rows: Vec<Vec<bool>> = lines.iter().map(|s| lucio::chars_match(s, '#')).collect();
     let mut col = 0;
     let mut trees = 0;
 

@@ -1,10 +1,8 @@
 use std::error::Error;
 
-mod test_data;
-
 fn smack_into_trees(each_x: usize, each_y: usize) -> u64 {
-    let data = test_data::read_test_data().unwrap();
-    let rows = test_data::data_to_lines(&data);
+    let lines: Vec<String> = lucio::get_input_data(3).expect("something to parse?");
+    let rows: Vec<Vec<bool>> = lines.iter().map(|s| lucio::chars_match(s, '#')).collect();
     let mut col = 0;
     let mut trees = 0;
     let mut cur_row = 0;

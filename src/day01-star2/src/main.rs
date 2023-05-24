@@ -1,17 +1,16 @@
-mod test_data;
 use rand::seq::SliceRandom;
 use std::error::Error;
 
 const SUM: i32 = 2020;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data()?;
+    let lines:Vec<i32> = lucio::get_input_data(1)?;
     let mut loops = 0;
 
     let mut rng = rand::thread_rng();
     let mut outer_lines = lines.clone();
     let mut middle_lines = lines.clone();
-    let mut inner_lines = lines.clone();
+    let mut inner_lines = lines;
 
     outer_lines.shuffle(&mut rng);
     middle_lines.shuffle(&mut rng);

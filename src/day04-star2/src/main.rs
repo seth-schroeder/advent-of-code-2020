@@ -1,11 +1,10 @@
 use regex::Regex;
 use std::collections::HashMap;
 use std::error::Error;
-
-mod test_data;
+use lucio::day;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let hashes = test_data::data_to_hashes(&test_data::read_test_data()?);
+    let hashes = day::four::data_to_hashes(&lucio::get_input_data(4)?);
     let mut valid = 0;
 
     for h in hashes {
@@ -39,7 +38,7 @@ fn is_valid_eyr(s: &str) -> bool {
 }
 
 fn is_hgt_in_range(s: &str, suffix: &str, floor: u32, ceiling: u32) -> bool {
-    let pat = format!(r"^(\d+){}$", suffix.to_string());
+    let pat = format!(r"^(\d+){}$", suffix);
     let r = Regex::new(&pat).unwrap();
 
     match r.captures(s) {

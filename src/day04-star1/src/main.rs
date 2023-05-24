@@ -1,22 +1,9 @@
 use std::collections::HashMap;
 use std::error::Error;
-
-mod test_data;
-
-fn valid_hash(h: &HashMap<String, String>) -> bool {
-    let required_keys = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
-
-    for k in required_keys {
-        if !h.contains_key(k) {
-            return false;
-        }
-    }
-
-    true
-}
+use lucio::day;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let hashes = test_data::data_to_hashes(&test_data::read_test_data()?);
+    let hashes = day::four::data_to_hashes(&lucio::get_input_data(4)?);
     let mut valid = 0;
 
     for h in hashes {
@@ -28,4 +15,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Yup I found {} valid items", valid);
 
     Ok(())
+}
+
+fn valid_hash(h: &HashMap<String, String>) -> bool {
+    let required_keys = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
+
+    for k in required_keys {
+        if !h.contains_key(k) {
+            return false;
+        }
+    }
+
+    true
 }

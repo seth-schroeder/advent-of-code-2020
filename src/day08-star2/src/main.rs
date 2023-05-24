@@ -6,10 +6,9 @@ mod processor;
 
 use processor::{Accumulator, Instruction, Operator, Processor, Program, RuntimeError};
 use std::error::Error;
-mod test_data;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day08-star1/full.txt")?;
+    let lines = lucio::get_input_data(8)?;
     let data: Program = Instruction::parse(&lines)?;
 
     println!("ended with {}", run_trials(&data));
@@ -19,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn run_trials(initial_program: &Program) -> Accumulator {
     let mut processor = Processor::new();
-    let mut all_jumps = Processor::find_all_jumps(&initial_program);
+    let mut all_jumps = Processor::find_all_jumps(initial_program);
 
     loop {
         let mut new_program = initial_program.clone();

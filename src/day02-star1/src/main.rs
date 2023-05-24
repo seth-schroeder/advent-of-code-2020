@@ -1,9 +1,7 @@
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = test_data::read_test_data()?;
+    let input:Vec<String> = lucio::get_input_data(2)?;
     let mut valid = 0;
     let mut invalid = 0;
 

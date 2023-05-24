@@ -1,9 +1,6 @@
 use std::collections::HashSet;
 use std::convert::TryFrom;
 
-#[path = "test_data.rs"]
-mod test_data;
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
@@ -94,7 +91,7 @@ impl Instruction {
         for line in lines {
             let pieces: Vec<&str> = line.split(' ').collect();
 
-            let operator = match pieces.get(0) {
+            let operator = match pieces.first() {
                 Some(&"nop") => Operator::NoOp,
                 Some(&"acc") => Operator::Acc,
                 Some(&"jmp") => Operator::Jmp,
@@ -113,47 +110,5 @@ impl Instruction {
         }
 
         Ok(Some(v))
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_run() {
-        let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
-        let data = Instruction::parse(&lines).unwrap();
-
-        if let Some(instructions) = data {
-            let mut processor = Processor::new(instructions);
-            let run = processor.run();
-
-            assert_matches!(run, Ok(()));
-            assert_eq!(5, processor.accumulator);
-        }
-    }
-
-    #[test]
-    fn test_parse() {
-        let lines = test_data::read_test_data("day08-star1/micro.txt").unwrap();
-        let data = Instruction::parse(&lines);
-
-        assert_matches!(data, Ok(_));
-
-        if let Ok(result) = data {
-            assert_matches!(result, Some(_));
-
-            if let Some(instructions) = result {
-                assert_matches!(instructions.get(0), Some(_));
-
-                if let Some(inst) = instructions.get(0) {
-                    assert_matches!(inst.operator, Operator::NoOp);
-                    assert_eq!(inst.operand, 0);
-                }
-            }
-        }
     }
 }

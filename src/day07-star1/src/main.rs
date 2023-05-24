@@ -4,10 +4,8 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day07-star1/haiku.txt")?;
+    let lines = lucio::get_input_data(7)?;
 
     // separate parsing the text from populating the graph
     let map = hash_map_that_will_almost_certainly_be_killed_by_the_second_star(lines);
@@ -65,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn first_pass(s: &str) -> (String, String) {
     let pat = r"^(.*) bags contain (.*)\.$";
-    let re = Regex::new(&pat).unwrap();
+    let re = Regex::new(pat).unwrap();
     let caps = match re.captures(s) {
         Some(x) => x,
         None => {

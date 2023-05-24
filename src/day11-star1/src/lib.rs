@@ -69,6 +69,7 @@ impl Seat {
 }
 
 // hello zeeeero abstraction or organization... excuse = late
+#[allow(dead_code)]
 fn textify_seating_area(seats: &SeatingArea) -> String {
     let mut s = Vec::new();
 

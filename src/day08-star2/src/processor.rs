@@ -1,9 +1,6 @@
 use std::collections::HashSet;
 use std::convert::TryFrom;
 
-#[path = "test_data.rs"]
-mod test_data;
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq)]
@@ -48,7 +45,7 @@ impl Instruction {
         for line in lines {
             let pieces: Vec<&str> = line.split(' ').collect();
 
-            let operator = match pieces.get(0) {
+            let operator = match pieces.first() {
                 Some(&"nop") => Operator::NoOp,
                 Some(&"acc") => Operator::Acc,
                 Some(&"jmp") => Operator::Jmp,
@@ -100,7 +97,7 @@ impl Processor {
         }
     }
 
-    fn trace(&mut self, instruction: &Instruction) -> () {
+    fn trace(&mut self, instruction: &Instruction) {
         // this is super gross, but simpler than implementing Display
         // (shame on me)
         let inst = match instruction.operator {
@@ -128,13 +125,12 @@ impl Processor {
 
     pub fn find_all_jumps(program: &Program) -> Vec<usize> {
         let mut v = vec![];
-        let mut i = 0;
-        for instruction in program {
+        for (index, instruction) in program.iter().enumerate() {
             if instruction.operator == Operator::Jmp {
-                v.push(i);
+                v.push(index);
             }
-            i += 1
         }
+
         v
     }
 

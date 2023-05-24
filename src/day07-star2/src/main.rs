@@ -1,10 +1,9 @@
 use std::error::Error;
 
 mod parser;
-mod test_data;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day07-star1/haiku.txt")?;
+    let lines = lucio::get_input_data(7)?;
     let parsed = parser::hash_parse(&lines);
 
     println!(

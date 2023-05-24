@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data()?;
+    let lines = lucio::get_input_data(6)?;
     let (v_members, v_answers) = lines_to_histos(&lines);
     let mut v_consensus: Vec<usize> = Vec::with_capacity(v_members.len());
 

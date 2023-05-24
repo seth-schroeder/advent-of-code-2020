@@ -1,0 +1,33 @@
+* warming up tasks
+  - switch to lucio
+  - clean up warnings
+  - tests pass
+  - answer accepted
+* future nice to haves
+** traits for lucio test data (return as String, u32, etc)
+* lucio
+** DONE add ~get_input_data~
+CLOSED: [2023-05-21 Sun 06:57]
+** DONE generalize ~get_input_data~
+CLOSED: [2023-05-21 Sun 07:38]
+** TODO understand the ~where~ clause in ~get_input_data~
+* tracker
+  |---+------+----------+---------+----------|
+  |   | star | warnings | passing | comments |
+  |---+------+----------+---------+----------|
+  | x | [[file:src/day01-star1/src/main.rs::use std::error::Error;][011]]  | none     | none    |          |
+  | x | [[file:src/day01-star2/src/main.rs::use std::error::Error;][012]]  |          |         |          |
+  | x | [[file:src/day02-star1/src/main.rs][021]]  |          |         |          |
+  | x | [[file:src/day02-star2/src/main.rs:][022]]  |          |         |          |
+  | x | [[file:src/day03-star1/src/main.rs][031]]  |          |         |          |
+  | x | [[file:src/day03-star2/src/main.rs][032]]  |          |         |          |
+  | x | [[file:src/day04-star1/src/main.rs][041]]  |          |         |          |
+  | x | [[file:src/day04-star2/src/main.rs][042]]  |          |         |          |
+  | x | [[file:src/day05-star1/src/main.rs][051]]  |          |         |          |
+  | x | [[file:src/day05-star2/src/main.rs][052]]  |          |         |          |
+  | x | [[file:src/day06-star1/src/main.rs][061]]  |          |         |          |
+  | x | [[file:src/day06-star2/src/main.rs][062]]  |          |         |          |
+  | x | [[file:src/day07-star1/src/main.rs][071]]  |          |         |          |
+  | x | [[file:src/day07-star2/src/main.rs][072]]  |          |         |          |
+  | x | [[file:src/day08-star1/src/main.rs][081]]  |          |         |          |
+  | x | [[file:src/day08-star2/src/main.rs][082]]  |          |         |          |

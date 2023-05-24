@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = test_data::read_test_data()?;
+    let input: Vec<String> = lucio::get_input_data(2)?;
     let mut valid = 0;
     let mut invalid = 0;
 
@@ -25,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             occurs.insert(i + 1, s);
         }
 
-        let pat = pieces[1].replace(":", "");
+        let pat = pieces[1].replace(':', "");
 
         let first_match = match occurs.get(&open) {
             Some(s) => *s == pat,

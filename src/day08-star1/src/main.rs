@@ -6,10 +6,9 @@ mod parser;
 
 use parser::{Instruction, Processor};
 use std::error::Error;
-mod test_data;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day08-star1/full.txt")?;
+    let lines = lucio::get_input_data(8)?;
     let data = Instruction::parse(&lines)?;
 
     if let Some(instructions) = data {

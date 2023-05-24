@@ -37,62 +37,95 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "day01-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day01-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "lucio",
  "rand",
 ]
 
 [[package]]
 name = "day02-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day02-star2"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day03-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day03-star2"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day04-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day04-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "lucio",
  "regex",
 ]
 
 [[package]]
 name = "day05-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day05-star2"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day06-star1"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day06-star2"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day07-star1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "lucio",
  "petgraph",
  "regex",
  "serde_json",
@@ -100,40 +133,43 @@ dependencies = [
 
 [[package]]
 name = "day07-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "lucio",
  "regex",
 ]
 
 [[package]]
 name = "day08-star1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "assert_matches",
+ "lucio",
 ]
 
 [[package]]
 name = "day08-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "assert_matches",
+ "lucio",
 ]
 
 [[package]]
 name = "day09-star1"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day09-star2"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day10-star1"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day10-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "assert_matches",
  "num-integer",
@@ -142,44 +178,44 @@ dependencies = [
 
 [[package]]
 name = "day11-star1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "array2d",
 ]
 
 [[package]]
 name = "day11-star2"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day12-star1"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day12-star2"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day13-star1"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "day13-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gcd",
 ]
 
 [[package]]
 name = "day14-star1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "regex",
 ]
 
 [[package]]
 name = "day14-star2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "regex",
 ]
@@ -189,6 +225,12 @@ name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+
+[[package]]
+name = "fs-err"
+version = "2.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0845fa252299212f0389d64ba26f34fa32cfe41588355f21ed507c59a0f64541"
 
 [[package]]
 name = "gcd"
@@ -234,6 +276,13 @@ name = "libc"
 version = "0.2.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5600b4e6efc5421841a2138a6b082e07fe12f9aaa12783d50e5d13325b26b4fc"
+
+[[package]]
+name = "lucio"
+version = "0.1.2"
+dependencies = [
+ "fs-err",
+]
 
 [[package]]
 name = "memchr"

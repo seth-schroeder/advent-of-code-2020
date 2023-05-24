@@ -1,9 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
 
-#[path = "test_data.rs"]
-mod test_data;
-
 pub type Edges = HashMap<String, usize>;
 pub type ParsedData = HashMap<String, Edges>;
 
@@ -35,7 +32,7 @@ pub fn hash_parse(lines: &[String]) -> ParsedData {
 
 fn first_pass(s: &str) -> (String, String) {
     let pat = r"^(.*) bags contain (.*)\.$";
-    let re = Regex::new(&pat).unwrap();
+    let re = Regex::new(pat).unwrap();
     let caps = match re.captures(s) {
         Some(x) => x,
         None => {
@@ -60,7 +57,7 @@ fn second_pass(s: &str) -> HashMap<String, usize> {
         let chunks: Vec<&str> = raw.split_whitespace().collect();
 
         let bag = format!("{} {}", chunks.get(1).unwrap(), chunks.get(2).unwrap());
-        let count = chunks.get(0).unwrap().parse().unwrap();
+        let count = chunks.first().unwrap().parse().unwrap();
         h.insert(bag, count);
     }
 
@@ -103,26 +100,5 @@ mod tests {
 
         expected.clear();
         assert_eq!(second_pass("no other bags"), expected);
-    }
-
-    #[test]
-    fn test_dive() {
-        let lines = test_data::read_test_data("day07-star2/puny.txt").unwrap();
-        let parsed = hash_parse(&lines);
-        assert_eq!(0, dive(&parsed, "gndn"));
-        assert_eq!(0, dive(&parsed, "dotted black"));
-        assert_eq!(2, dive(&parsed, "light blue"));
-
-        let lines = test_data::read_test_data("day07-star2/small.txt").unwrap();
-        let parsed = hash_parse(&lines);
-        assert_eq!(0, dive(&parsed, "gndn"));
-        assert_eq!(0, dive(&parsed, "dotted black"));
-        assert_eq!(126, dive(&parsed, "shiny gold"));
-
-        let lines = test_data::read_test_data("day07-star2/micro.txt").unwrap();
-        let parsed = hash_parse(&lines);
-        assert_eq!(0, dive(&parsed, "gndn"));
-        assert_eq!(0, dive(&parsed, "dotted black"));
-        assert_eq!(32, dive(&parsed, "shiny gold"));
     }
 }
