@@ -5,10 +5,9 @@ fn smack_into_trees(each_x: usize, each_y: usize) -> u64 {
     let rows: Vec<Vec<bool>> = lines.iter().map(|s| lucio::chars_match(s, '#')).collect();
     let mut col = 0;
     let mut trees = 0;
-    let mut cur_row = 0;
 
-    for row in &rows {
-        if cur_row % each_y == 0 {
+    for (index, row) in rows.iter().enumerate() {
+        if index % each_y == 0 {
             if let Some(thing) = row.get(col) {
                 if *thing {
                     trees += 1;
@@ -16,7 +15,6 @@ fn smack_into_trees(each_x: usize, each_y: usize) -> u64 {
             }
             col = (col + each_x) % row.len();
         }
-        cur_row += 1;
     }
 
     println!(
