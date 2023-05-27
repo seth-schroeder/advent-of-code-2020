@@ -2,8 +2,6 @@ mod adapter;
 
 use adapter::Adapter;
 use std::collections::HashMap;
-use std::fs;
-use std::io;
 
 pub fn run() {
     if let Ok(adapters) = make_adapters() {
@@ -29,7 +27,7 @@ fn compute_differences(adapters: &[Adapter]) -> HashMap<u32, u32> {
 }
 
 fn make_adapters() -> Result<Vec<Adapter>, ()> {
-    let mut joltages = read_test_data("day10-star1/largest.txt").unwrap();
+    let mut joltages = lucio::get_input_data(10).unwrap();
     let mut adapters = Vec::with_capacity(joltages.len() + 2);
 
     // pretending the outlet is a 0 joltage device, let's see how that goes.
@@ -44,18 +42,4 @@ fn make_adapters() -> Result<Vec<Adapter>, ()> {
     adapters.push(Adapter::make_device(&adapters).unwrap());
 
     Ok(adapters)
-}
-
-// one month and still the same basic code o.O
-fn read_test_data(relative_file_name: &str) -> Result<Vec<u32>, io::Error> {
-    let path = fs::canonicalize(format!("../../input-data/{}", relative_file_name))?;
-    let s = fs::read_to_string(path)?;
-
-    let mut mv: Vec<u32> = Vec::new();
-
-    for line in s.lines() {
-        mv.push(line.trim().to_string().parse().unwrap());
-    }
-
-    Ok(mv)
 }

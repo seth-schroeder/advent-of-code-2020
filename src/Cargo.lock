@@ -172,6 +172,9 @@ dependencies = [
 [[package]]
 name = "day10-star1"
 version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day10-star2"
