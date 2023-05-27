@@ -1,10 +1,8 @@
 use std::cmp::Ordering;
 use std::error::Error;
 
-mod test_data;
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = test_data::read_test_data("day09-star1/full.txt")?;
+    let lines = lucio::get_input_data(9)?;
 
     match does_too_much(&lines, 3199139634) {
         Ok(val) => println!("sum of min/max is {}", val),

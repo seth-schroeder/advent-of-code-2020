@@ -158,10 +158,16 @@ dependencies = [
 [[package]]
 name = "day09-star1"
 version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day09-star2"
 version = "0.1.1"
+dependencies = [
+ "lucio",
+]
 
 [[package]]
 name = "day10-star1"
