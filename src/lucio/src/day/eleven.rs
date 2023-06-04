@@ -1,19 +1,13 @@
 use array2d::Array2D;
-use std::fmt;
+use std::{backtrace::Backtrace, fmt};
 
-const MAX_NEIGHBORS: u8 = 3;
-
-enum Motion {
-    GoForward,
-    GoBackward,
-}
+const MAX_NEIGHBORS: usize = 3;
 
 struct SeatIterator<'a> {
     seats: &'a SeatingArea,
     row_index: Option<usize>,
-    row_delta: Option<Motion>,
     column_index: Option<usize>,
-    column_delta: Option<Motion>,
+    direction: &'a Direction,
 }
 
 impl Iterator for SeatIterator<'_> {
@@ -21,8 +15,8 @@ impl Iterator for SeatIterator<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if let (Some(row_index), Some(column_index)) = (self.row_index, self.column_index) {
-            self.row_index = move_in_direction(row_index, &self.row_delta);
-            self.column_index = move_in_direction(column_index, &self.column_delta);
+            self.column_index = move_in_direction(column_index, &self.direction.0);
+            self.row_index = move_in_direction(row_index, &self.direction.1);
             self.seats.get(row_index, column_index).copied()
         } else {
             None
@@ -30,14 +24,27 @@ impl Iterator for SeatIterator<'_> {
     }
 }
 
-fn move_in_direction(index: usize, motion: &Option<Motion>) -> Option<usize> {
-    match motion {
+fn move_in_direction(index: usize, potential_change: &Option<Change>) -> Option<usize> {
+    match potential_change {
         None => Some(index),
-        Some(motion_) => match motion_ {
-            Motion::GoForward => index.checked_add(1),
-            Motion::GoBackward => index.checked_sub(1),
+        Some(change) => match change {
+            Change::Increment => index.checked_add(1),
+            Change::Decrement => index.checked_sub(1),
         },
     }
+}
+
+fn textify_board(board: &SeatingArea) -> String {
+    board
+        .rows_iter()
+        .map(|row_iter| {
+            row_iter
+                .map(|seat| format!("{}", seat))
+                .collect::<Vec<String>>()
+                .join("")
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 // hmm the Hollywood metaphors are wan tonight
@@ -72,8 +79,7 @@ pub fn roll_tape(seats: &SeatingArea) -> u32 {
     count_occupants(&v.pop().unwrap())
 }
 
-pub fn parse_input_data() -> Result<Array2D<Seat>, array2d::Error> {
-    let lines: Vec<String> = crate::get_input_data(11).unwrap();
+pub fn parse_input_data(lines: &Vec<String>) -> Result<Array2D<Seat>, array2d::Error> {
     let seats = lines
         .iter()
         .map(|line| {
@@ -191,7 +197,44 @@ fn count_occupants(seats: &SeatingArea) -> u32 {
     headcount
 }
 
-fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
+enum Change {
+    Increment,
+    Decrement,
+}
+
+type Direction = (Option<Change>, Option<Change>);
+
+const NORTH: Direction = (None, Some(Change::Decrement));
+const NORTH_EAST: Direction = (Some(Change::Increment), Some(Change::Decrement));
+const EAST: Direction = (Some(Change::Increment), None);
+const SOUTH_EAST: Direction = (Some(Change::Increment), Some(Change::Increment));
+const SOUTH: Direction = (None, Some(Change::Increment));
+const SOUTH_WEST: Direction = (Some(Change::Decrement), Some(Change::Increment));
+const WEST: Direction = (Some(Change::Decrement), None);
+const NORTH_WEST: Direction = (Some(Change::Decrement), Some(Change::Decrement));
+
+const DIRECTIONS: [Direction; 8] = [
+    NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST,
+];
+
+fn count_alt(x: usize, y: usize, seats: &SeatingArea) -> usize {
+    DIRECTIONS.iter().fold(0, |acc, direction| {
+        let mut iter = SeatIterator {
+            seats: &seats,
+            row_index: Some(x),
+            column_index: Some(y),
+            direction,
+        };
+
+        if let Some(Seat::Full) = iter.next() {
+            acc + 1
+        } else {
+            acc
+        }
+    })
+}
+
+fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> usize {
     let mut headcount = 0;
     let to_visit = Seat::adjacent_indices(x_y, seats);
 
@@ -202,11 +245,15 @@ fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> u8 {
     }
 
     headcount
+    // let (x, y) = x_y;
+    // count_alt(x, y, seats)
 }
 
 #[cfg(test)]
 mod tests {
     use std::assert_eq;
+
+    use crate::get_alternate_input_data;
 
     use super::*;
 
@@ -216,16 +263,23 @@ mod tests {
         let mut iter = SeatIterator {
             seats: &seats,
             row_index: Some(0),
-            row_delta: Some(Motion::GoForward),
             column_index: Some(0),
-            column_delta: Some(Motion::GoForward),
+            direction: &EAST,
         };
         assert_eq!(Some(Seat::Empty), iter.next());
-        assert_eq!(Some(1), iter.row_index);
+        assert_eq!(Some(0), iter.row_index);
         assert_eq!(Some(1), iter.column_index);
         assert_eq!(Some(Seat::Empty), iter.next());
-        assert_eq!(Some(2), iter.row_index);
+        assert_eq!(Some(0), iter.row_index);
         assert_eq!(Some(2), iter.column_index);
         assert_eq!(None, iter.next())
+    }
+
+    #[test]
+    fn spotcheck() {
+        let lines = get_alternate_input_data(11, "starter.txt").unwrap();
+        let data = parse_input_data(&lines).unwrap();
+        eprintln!("{}", textify_board(&data));
+        assert!(false)
     }
 }
