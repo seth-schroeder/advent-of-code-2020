@@ -4,4 +4,5 @@ version = "0.1.2"
 edition.workspace = true
 
 [dependencies]
-fs-err = "2.9.0"
+fs-err = { workspace = true }
+array2d = { workspace = true }

@@ -4,3 +4,8 @@ members = ["day*", "lucio"]
 [workspace.package]
 edition = "2021"
 version = "0.1.1"
+
+[workspace.dependencies]
+fs-err = "2.9.0"
+array2d = "0.3.0"
+

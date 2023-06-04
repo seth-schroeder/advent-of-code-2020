@@ -6,4 +6,4 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-array2d = "0.2"
+lucio = { path = "../lucio" }

@@ -35,4 +35,6 @@ CLOSED: [2023-05-21 Sun 07:38]
   | x | [[file:src/day09-star2/src/main.rs][092]]  |          |         |          |
   | x | [[file:src/day10-star1/src/main.rs][101]]  |          |         |          |
   |   | [[file:src/day10-star2/src/main.rs][102]]  |          |         | unsolved |
+  | x | [[file:src/day11-star1/src/main.rs][111]]  |          |         |          |
+  |   | [[file:src/day11-star2/src/main.rs][112]]  |          |         |          |
   |---+------+----------+---------+----------|

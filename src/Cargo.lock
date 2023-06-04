@@ -13,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "array2d"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "224b2db9d3e7dd068c8b07b186076ee668ce38810d0ba12c80dacbcbb7cfc9e8"
+checksum = "79093d31d0a9c7832c71ad74dd945b7861f721e6f242aa67be253a5eecbac937"
 
 [[package]]
 name = "assert_matches"
@@ -189,12 +189,16 @@ dependencies = [
 name = "day11-star1"
 version = "0.1.1"
 dependencies = [
- "array2d",
+ "lucio",
 ]
 
 [[package]]
 name = "day11-star2"
 version = "0.1.1"
+dependencies = [
+ "array2d",
+ "lucio",
+]
 
 [[package]]
 name = "day12-star1"
@@ -290,6 +294,7 @@ checksum = "5600b4e6efc5421841a2138a6b082e07fe12f9aaa12783d50e5d13325b26b4fc"
 name = "lucio"
 version = "0.1.2"
 dependencies = [
+ "array2d",
  "fs-err",
 ]
 
