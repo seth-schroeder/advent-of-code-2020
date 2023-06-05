@@ -34,6 +34,40 @@ fn move_in_direction(index: usize, potential_change: &Option<Change>) -> Option<
     }
 }
 
+fn adjacent_seats(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
+    // TODO `fold` and `Vec` have been difficult
+    DIRECTIONS
+        .iter()
+        .map(|direction| {
+            let mut iter = SeatIterator {
+                seats: &board,
+                row_index: Some(x),
+                column_index: Some(y),
+                direction,
+            };
+
+            let seat = iter.next();
+            eprintln!(
+                "0 -- x:{}, y:{}, d:{:?}, i.x:{:?}, i.y:{:?}, s:{:?}",
+                x, y, direction, iter.row_index, iter.column_index, seat
+            );
+
+            let seat = iter.next();
+            eprintln!(
+                "1 -- x:{}, y:{}, d:{:?}, i.x:{:?}, i.y{:?}, s:{:?}",
+                x, y, direction, iter.row_index, iter.column_index, seat
+            );
+            seat
+        })
+        .filter(|maybe_seat| maybe_seat.is_some())
+        .map(|option_seat| {
+            let seat = option_seat.unwrap();
+            eprintln!("{}/{}/{}", x, y, seat);
+            seat
+        })
+        .collect()
+}
+
 fn textify_board(board: &SeatingArea) -> String {
     board
         .rows_iter()
@@ -197,6 +231,7 @@ fn count_occupants(seats: &SeatingArea) -> u32 {
     headcount
 }
 
+#[derive(Debug)]
 enum Change {
     Increment,
     Decrement,
@@ -235,17 +270,21 @@ fn count_alt(x: usize, y: usize, seats: &SeatingArea) -> usize {
 }
 
 fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> usize {
-    let mut headcount = 0;
-    let to_visit = Seat::adjacent_indices(x_y, seats);
+    // let mut headcount = 0;
+    // let to_visit = Seat::adjacent_indices(x_y, seats);
 
-    for nx_ny in to_visit {
-        if let Seat::Full = seats[nx_ny] {
-            headcount += 1;
-        }
-    }
+    // for nx_ny in to_visit {
+    //     if let Seat::Full = seats[nx_ny] {
+    //         headcount += 1;
+    //     }
+    // }
 
-    headcount
-    // let (x, y) = x_y;
+    // headcount
+    let (x, y) = x_y;
+    adjacent_seats(&seats, x, y)
+        .into_iter()
+        .filter(|seat| *seat == Seat::Full)
+        .count()
     // count_alt(x, y, seats)
 }
 
@@ -280,6 +319,7 @@ mod tests {
         let lines = get_alternate_input_data(11, "starter.txt").unwrap();
         let data = parse_input_data(&lines).unwrap();
         eprintln!("{}", textify_board(&data));
+        eprintln!("{:?}", adjacent_seats(&data, 0, 0));
         assert!(false)
     }
 }
