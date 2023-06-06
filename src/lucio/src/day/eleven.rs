@@ -1,23 +1,96 @@
 use array2d::Array2D;
-use std::{backtrace::Backtrace, fmt};
+use std::fmt;
 
 const MAX_NEIGHBORS: usize = 3;
 
+#[derive(Debug)]
+enum Change {
+    Increment,
+    Decrement,
+}
+
+#[derive(Debug, PartialEq)]
+enum Direction {
+    North,
+    NorthEast,
+    East,
+    SouthEast,
+    South,
+    SouthWest,
+    West,
+    NorthWest,
+}
+
+#[derive(Debug)]
+struct Angle {
+    x: Option<Change>,
+    y: Option<Change>,
+    label: Direction,
+}
+
+fn angle_for(direction: Direction) -> Option<Angle> {
+    ANGLES.into_iter().find(|angle| angle.label == direction)
+}
+
+const ANGLES: [Angle; 8] = [
+    Angle {
+        label: Direction::North,
+        x: None,
+        y: Some(Change::Decrement),
+    },
+    Angle {
+        label: Direction::NorthEast,
+        x: Some(Change::Increment),
+        y: Some(Change::Decrement),
+    },
+    Angle {
+        label: Direction::East,
+        x: Some(Change::Increment),
+        y: None,
+    },
+    Angle {
+        label: Direction::SouthEast,
+        x: Some(Change::Increment),
+        y: Some(Change::Increment),
+    },
+    Angle {
+        label: Direction::South,
+        x: None,
+        y: Some(Change::Increment),
+    },
+    Angle {
+        label: Direction::SouthWest,
+        x: Some(Change::Decrement),
+        y: Some(Change::Increment),
+    },
+    Angle {
+        label: Direction::West,
+        x: Some(Change::Decrement),
+        y: None,
+    },
+    Angle {
+        label: Direction::NorthWest,
+        x: Some(Change::Decrement),
+        y: Some(Change::Decrement),
+    },
+];
+
+#[derive(Debug)]
 struct SeatIterator<'a> {
     seats: &'a SeatingArea,
-    row_index: Option<usize>,
-    column_index: Option<usize>,
-    direction: &'a Direction,
+    x: Option<usize>,
+    y: Option<usize>,
+    angle: &'a Angle,
 }
 
 impl Iterator for SeatIterator<'_> {
     type Item = Seat;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let (Some(row_index), Some(column_index)) = (self.row_index, self.column_index) {
-            self.column_index = move_in_direction(column_index, &self.direction.0);
-            self.row_index = move_in_direction(row_index, &self.direction.1);
-            self.seats.get(row_index, column_index).copied()
+        if let (Some(x), Some(y)) = (self.x, self.y) {
+            self.x = move_in_direction(x, &self.angle.x);
+            self.y = move_in_direction(y, &self.angle.y);
+            self.seats.get(y, x).copied()
         } else {
             None
         }
@@ -36,33 +109,22 @@ fn move_in_direction(index: usize, potential_change: &Option<Change>) -> Option<
 
 fn adjacent_seats(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
     // TODO `fold` and `Vec` have been difficult
-    DIRECTIONS
-        .iter()
-        .map(|direction| {
+    ANGLES
+        .into_iter()
+        .filter_map(|angle| {
             let mut iter = SeatIterator {
-                seats: &board,
-                row_index: Some(x),
-                column_index: Some(y),
-                direction,
+                seats: board,
+                x: Some(x),
+                y: Some(y),
+                angle: &angle,
             };
 
+            iter.next();
             let seat = iter.next();
             eprintln!(
-                "0 -- x:{}, y:{}, d:{:?}, i.x:{:?}, i.y:{:?}, s:{:?}",
-                x, y, direction, iter.row_index, iter.column_index, seat
+                "x:{:?}, y:{:?}, a:{:?}, s:{:?}",
+                iter.x, iter.y, angle.label, seat
             );
-
-            let seat = iter.next();
-            eprintln!(
-                "1 -- x:{}, y:{}, d:{:?}, i.x:{:?}, i.y{:?}, s:{:?}",
-                x, y, direction, iter.row_index, iter.column_index, seat
-            );
-            seat
-        })
-        .filter(|maybe_seat| maybe_seat.is_some())
-        .map(|option_seat| {
-            let seat = option_seat.unwrap();
-            eprintln!("{}/{}/{}", x, y, seat);
             seat
         })
         .collect()
@@ -113,7 +175,7 @@ pub fn roll_tape(seats: &SeatingArea) -> u32 {
     count_occupants(&v.pop().unwrap())
 }
 
-pub fn parse_input_data(lines: &Vec<String>) -> Result<Array2D<Seat>, array2d::Error> {
+pub fn parse_input_data(lines: &[String]) -> Result<Array2D<Seat>, array2d::Error> {
     let seats = lines
         .iter()
         .map(|line| {
@@ -231,44 +293,6 @@ fn count_occupants(seats: &SeatingArea) -> u32 {
     headcount
 }
 
-#[derive(Debug)]
-enum Change {
-    Increment,
-    Decrement,
-}
-
-type Direction = (Option<Change>, Option<Change>);
-
-const NORTH: Direction = (None, Some(Change::Decrement));
-const NORTH_EAST: Direction = (Some(Change::Increment), Some(Change::Decrement));
-const EAST: Direction = (Some(Change::Increment), None);
-const SOUTH_EAST: Direction = (Some(Change::Increment), Some(Change::Increment));
-const SOUTH: Direction = (None, Some(Change::Increment));
-const SOUTH_WEST: Direction = (Some(Change::Decrement), Some(Change::Increment));
-const WEST: Direction = (Some(Change::Decrement), None);
-const NORTH_WEST: Direction = (Some(Change::Decrement), Some(Change::Decrement));
-
-const DIRECTIONS: [Direction; 8] = [
-    NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST,
-];
-
-fn count_alt(x: usize, y: usize, seats: &SeatingArea) -> usize {
-    DIRECTIONS.iter().fold(0, |acc, direction| {
-        let mut iter = SeatIterator {
-            seats: &seats,
-            row_index: Some(x),
-            column_index: Some(y),
-            direction,
-        };
-
-        if let Some(Seat::Full) = iter.next() {
-            acc + 1
-        } else {
-            acc
-        }
-    })
-}
-
 fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> usize {
     // let mut headcount = 0;
     // let to_visit = Seat::adjacent_indices(x_y, seats);
@@ -281,11 +305,10 @@ fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> usize {
 
     // headcount
     let (x, y) = x_y;
-    adjacent_seats(&seats, x, y)
+    adjacent_seats(seats, x, y)
         .into_iter()
         .filter(|seat| *seat == Seat::Full)
         .count()
-    // count_alt(x, y, seats)
 }
 
 #[cfg(test)]
@@ -297,29 +320,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn check_due_east() {
-        let seats = Array2D::filled_with(Seat::Empty, 2, 2);
-        let mut iter = SeatIterator {
-            seats: &seats,
-            row_index: Some(0),
-            column_index: Some(0),
-            direction: &EAST,
-        };
-        assert_eq!(Some(Seat::Empty), iter.next());
-        assert_eq!(Some(0), iter.row_index);
-        assert_eq!(Some(1), iter.column_index);
-        assert_eq!(Some(Seat::Empty), iter.next());
-        assert_eq!(Some(0), iter.row_index);
-        assert_eq!(Some(2), iter.column_index);
-        assert_eq!(None, iter.next())
-    }
-
-    #[test]
     fn spotcheck() {
         let lines = get_alternate_input_data(11, "starter.txt").unwrap();
         let data = parse_input_data(&lines).unwrap();
-        eprintln!("{}", textify_board(&data));
         eprintln!("{:?}", adjacent_seats(&data, 0, 0));
-        assert!(false)
+
+        assert_eq!(1, count_neighbors((0, 0), &data));
+        assert_eq!(1, count_neighbors((1, 0), &data));
+        assert_eq!(0, count_neighbors((2, 0), &data));
+        assert_eq!(0, count_neighbors((0, 1), &data));
+        assert_eq!(1, count_neighbors((0, 2), &data));
+        assert_eq!(0, count_neighbors((0, 3), &data));
+
+        let iter = SeatIterator {
+            seats: &data,
+            x: Some(0),
+            y: Some(0),
+            angle: &angle_for(Direction::West).unwrap(),
+        };
+        assert_eq!(1, iter.count());
+
+        let make_iter = |direction| {
+            SeatIterator {
+                seats: &data,
+                x: Some(0),
+                y: Some(0),
+                angle: &angle_for(direction).unwrap(),
+            }.collect::<Vec<Seat>>()
+        };
+        assert_eq!(1, make_iter(Direction::West).len());
+        assert_eq!(10, make_iter(Direction::East).len());
+        assert_eq!(10, make_iter(Direction::SouthEast).len());
     }
 }
