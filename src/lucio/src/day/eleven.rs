@@ -1,5 +1,5 @@
 use array2d::Array2D;
-use std::fmt;
+use std::{eprintln, fmt};
 
 const MAX_NEIGHBORS: usize = 3;
 
@@ -21,15 +21,13 @@ enum Direction {
     NorthWest,
 }
 
+// label is used only in the test code sigh
+#[allow(dead_code)]
 #[derive(Debug)]
 struct Angle {
     x: Option<Change>,
     y: Option<Change>,
     label: Direction,
-}
-
-fn angle_for(direction: Direction) -> Option<Angle> {
-    ANGLES.into_iter().find(|angle| angle.label == direction)
 }
 
 const ANGLES: [Angle; 8] = [
@@ -108,7 +106,6 @@ fn move_in_direction(index: usize, potential_change: &Option<Change>) -> Option<
 }
 
 fn adjacent_seats(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
-    // TODO `fold` and `Vec` have been difficult
     ANGLES
         .into_iter()
         .filter_map(|angle| {
@@ -119,28 +116,12 @@ fn adjacent_seats(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
                 angle: &angle,
             };
 
+            // Skip the current item
             iter.next();
-            let seat = iter.next();
-            eprintln!(
-                "x:{:?}, y:{:?}, a:{:?}, s:{:?}",
-                iter.x, iter.y, angle.label, seat
-            );
-            seat
+
+            iter.next()
         })
         .collect()
-}
-
-fn textify_board(board: &SeatingArea) -> String {
-    board
-        .rows_iter()
-        .map(|row_iter| {
-            row_iter
-                .map(|seat| format!("{}", seat))
-                .collect::<Vec<String>>()
-                .join("")
-        })
-        .collect::<Vec<String>>()
-        .join("\n")
 }
 
 // hmm the Hollywood metaphors are wan tonight
@@ -217,63 +198,34 @@ impl fmt::Display for Seat {
     }
 }
 
-impl Seat {
-    // moving a new Vec out seems really expensive
-    fn adjacent_indices(x_y: (usize, usize), seats: &SeatingArea) -> Vec<(usize, usize)> {
-        let mut v = Vec::new();
-
-        // "no need to unit test boundary conditions when mixing indices and counts"
-        // me, several hours ago.
-        let (x, y) = x_y;
-        let x_min = if x == 0 { x } else { x - 1 };
-        let x_max = seats.num_rows().min(x + 2);
-        let y_min = if y == 0 { y } else { y - 1 };
-        let y_max = seats.num_columns().min(y + 2);
-
-        // hello there, doubleplus extra time in Purgatory
-        for x_ in x_min..x_max {
-            for y_ in y_min..y_max {
-                if x_y == (x_, y_) {
-                    continue;
-                }
-
-                v.push((x_, y_));
-            }
-        }
-
-        v
-    }
-}
-
 fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
     let mut next_round = seats.clone();
-    let mut x_y = (0, 0);
 
-    while (x_y).0 < seats.num_rows() {
-        while (x_y).1 < seats.num_columns() {
-            let neighbors = count_neighbors(x_y, seats);
-            let mut seat = seats[x_y];
+    for x in 0..seats.num_columns() {
+        for y in 0..seats.num_rows() {
+            let neighbors = count_neighbors(x, y, seats);
+            let index = (y, x);
 
-            match seats[x_y] {
+            if let Some(next_seat) = match seats[index] {
                 Seat::Full => {
                     if neighbors > MAX_NEIGHBORS {
-                        seat = Seat::Empty;
+                        Some(Seat::Empty)
+                    } else {
+                        None
                     }
                 }
                 Seat::Empty => {
                     if neighbors == 0 {
-                        seat = Seat::Full;
+                        Some(Seat::Full)
+                    } else {
+                        None
                     }
                 }
-                Seat::Floor => (),
+                Seat::Floor => None,
+            } {
+                next_round[index] = next_seat
             }
-
-            next_round[x_y] = seat;
-
-            (x_y).1 += 1;
         }
-        (x_y).1 = 0;
-        (x_y).0 += 1;
     }
 
     next_round
@@ -293,18 +245,7 @@ fn count_occupants(seats: &SeatingArea) -> u32 {
     headcount
 }
 
-fn count_neighbors(x_y: (usize, usize), seats: &SeatingArea) -> usize {
-    // let mut headcount = 0;
-    // let to_visit = Seat::adjacent_indices(x_y, seats);
-
-    // for nx_ny in to_visit {
-    //     if let Seat::Full = seats[nx_ny] {
-    //         headcount += 1;
-    //     }
-    // }
-
-    // headcount
-    let (x, y) = x_y;
+fn count_neighbors(x: usize, y: usize, seats: &SeatingArea) -> usize {
     adjacent_seats(seats, x, y)
         .into_iter()
         .filter(|seat| *seat == Seat::Full)
@@ -319,18 +260,35 @@ mod tests {
 
     use super::*;
 
+    fn textify_board(board: &SeatingArea) -> String {
+        board
+            .rows_iter()
+            .map(|row_iter| {
+                row_iter
+                    .map(|seat| format!("{}", seat))
+                    .collect::<Vec<String>>()
+                    .join("")
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+
+    fn angle_for(direction: Direction) -> Option<Angle> {
+        ANGLES.into_iter().find(|angle| angle.label == direction)
+    }
+
     #[test]
     fn spotcheck() {
         let lines = get_alternate_input_data(11, "starter.txt").unwrap();
         let data = parse_input_data(&lines).unwrap();
         eprintln!("{:?}", adjacent_seats(&data, 0, 0));
 
-        assert_eq!(1, count_neighbors((0, 0), &data));
-        assert_eq!(1, count_neighbors((1, 0), &data));
-        assert_eq!(0, count_neighbors((2, 0), &data));
-        assert_eq!(0, count_neighbors((0, 1), &data));
-        assert_eq!(1, count_neighbors((0, 2), &data));
-        assert_eq!(0, count_neighbors((0, 3), &data));
+        assert_eq!(1, count_neighbors(0, 0, &data));
+        assert_eq!(1, count_neighbors(1, 0, &data));
+        assert_eq!(0, count_neighbors(2, 0, &data));
+        assert_eq!(0, count_neighbors(0, 1, &data));
+        assert_eq!(1, count_neighbors(0, 2, &data));
+        assert_eq!(0, count_neighbors(0, 3, &data));
 
         let iter = SeatIterator {
             seats: &data,
@@ -340,16 +298,18 @@ mod tests {
         };
         assert_eq!(1, iter.count());
 
-        let make_iter = |direction| {
+        let walk = |direction| {
             SeatIterator {
                 seats: &data,
                 x: Some(0),
                 y: Some(0),
                 angle: &angle_for(direction).unwrap(),
-            }.collect::<Vec<Seat>>()
+            }
+            .collect::<Vec<Seat>>()
         };
-        assert_eq!(1, make_iter(Direction::West).len());
-        assert_eq!(10, make_iter(Direction::East).len());
-        assert_eq!(10, make_iter(Direction::SouthEast).len());
+        assert_eq!(1, walk(Direction::West).len());
+        assert_eq!(10, walk(Direction::South).len());
+        assert_eq!(11, walk(Direction::East).len());
+        assert_eq!(10, walk(Direction::SouthEast).len());
     }
 }
