@@ -105,6 +105,25 @@ fn move_in_direction(index: usize, potential_change: &Option<Change>) -> Option<
     }
 }
 
+fn adjacent_seats2(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
+    ANGLES
+        .into_iter()
+        .filter_map(|angle| {
+            let mut iter = SeatIterator {
+                seats: board,
+                x: Some(x),
+                y: Some(y),
+                angle: &angle,
+            };
+
+            // Skip the current item
+            iter.next();
+
+            iter.find(|seat| *seat == Seat::Empty || *seat == Seat::Full)
+        })
+        .collect()
+}
+
 fn adjacent_seats(board: &SeatingArea, x: usize, y: usize) -> Vec<Seat> {
     ANGLES
         .into_iter()
@@ -141,6 +160,37 @@ pub fn roll_tape(seats: &SeatingArea) -> u32 {
 
         let last_area = v.first().unwrap();
         let this_area = lights_camera_action(last_area);
+
+        if *last_area == this_area {
+            println!("\n");
+            break;
+        }
+
+        print!(".");
+        v.pop();
+        v.push(this_area);
+    }
+
+    eprintln!("It took {} frames", frames);
+    count_occupants(&v.pop().unwrap())
+}
+
+pub fn roll_tape2(seats: &SeatingArea) -> u32 {
+    let mut frames = 0;
+
+    // pushing and popping a one element vector is a 1am workaround for juggling ownership and borrowing in a loop
+    let mut v = vec![];
+
+    loop {
+        frames += 1;
+
+        if v.is_empty() {
+            v.push(lights_camera_action2(seats));
+            continue;
+        }
+
+        let last_area = v.first().unwrap();
+        let this_area = lights_camera_action2(last_area);
 
         if *last_area == this_area {
             println!("\n");
@@ -231,6 +281,39 @@ fn lights_camera_action(seats: &SeatingArea) -> SeatingArea {
     next_round
 }
 
+fn lights_camera_action2(seats: &SeatingArea) -> SeatingArea {
+    let mut next_round = seats.clone();
+
+    for x in 0..seats.num_columns() {
+        for y in 0..seats.num_rows() {
+            let neighbors = count_neighbors2(x, y, seats);
+            let index = (y, x);
+
+            if let Some(next_seat) = match seats[index] {
+                Seat::Full => {
+                    if neighbors > 4 {
+                        Some(Seat::Empty)
+                    } else {
+                        None
+                    }
+                }
+                Seat::Empty => {
+                    if neighbors == 0 {
+                        Some(Seat::Full)
+                    } else {
+                        None
+                    }
+                }
+                Seat::Floor => None,
+            } {
+                next_round[index] = next_seat
+            }
+        }
+    }
+
+    next_round
+}
+
 fn count_occupants(seats: &SeatingArea) -> u32 {
     let mut headcount = 0;
 
@@ -247,6 +330,13 @@ fn count_occupants(seats: &SeatingArea) -> u32 {
 
 fn count_neighbors(x: usize, y: usize, seats: &SeatingArea) -> usize {
     adjacent_seats(seats, x, y)
+        .into_iter()
+        .filter(|seat| *seat == Seat::Full)
+        .count()
+}
+
+fn count_neighbors2(x: usize, y: usize, seats: &SeatingArea) -> usize {
+    adjacent_seats2(seats, x, y)
         .into_iter()
         .filter(|seat| *seat == Seat::Full)
         .count()
@@ -311,5 +401,37 @@ mod tests {
         assert_eq!(10, walk(Direction::South).len());
         assert_eq!(11, walk(Direction::East).len());
         assert_eq!(10, walk(Direction::SouthEast).len());
+    }
+
+    #[test]
+    fn spotcheck2() {
+        let lines = get_alternate_input_data(11, "star2-1.txt").unwrap();
+        let data = parse_input_data(&lines).unwrap();
+        eprintln!("{:?}", adjacent_seats2(&data, 3, 4));
+
+        let lines = get_alternate_input_data(11, "star2-2.txt").unwrap();
+        let data = parse_input_data(&lines).unwrap();
+        eprintln!("{:?}", adjacent_seats2(&data, 1, 1));
+
+        let lines = get_alternate_input_data(11, "star2-3.txt").unwrap();
+        let data = parse_input_data(&lines).unwrap();
+        eprintln!("{:?}", adjacent_seats2(&data, 3, 3));
+
+        let lines = get_alternate_input_data(11, "star2-4.txt").unwrap();
+        let data = parse_input_data(&lines).unwrap();
+        eprintln!("{:?}", adjacent_seats2(&data, 0, 0));
+        assert_eq!(0, count_neighbors2(0, 0, &data));
+
+        let next = lights_camera_action2(&data);
+        eprintln!("{}\n", textify_board(&next));
+
+        let next = lights_camera_action2(&next);
+        eprintln!("{}\n", textify_board(&next));
+
+        let next = lights_camera_action2(&next);
+        eprintln!("{}\n", textify_board(&next));
+
+        // I know there's a better way to get text output
+        assert!(false);
     }
 }
