@@ -26,4 +26,3 @@ go mod init "github.com/seth-schroeder/advent-of-code-2020/${day_name}"
 git add .
 
 git commit -m "Created branch for ${branch_name}"
-cd "${branch_name}"
