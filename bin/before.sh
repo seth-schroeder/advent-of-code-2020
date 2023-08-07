@@ -23,6 +23,17 @@ cd src/go
 mkdir -p "${day_name}"
 cd "${day_name}"
 go mod init "github.com/seth-schroeder/advent-of-code-2020/${day_name}"
-git add .
 
+# eww
+cat > main.go <<_SRC
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}
+_SRC
+
+git add .
 git commit -m "Created branch for ${branch_name}"
