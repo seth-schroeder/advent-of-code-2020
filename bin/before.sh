@@ -5,7 +5,7 @@
 _day="${1}"
 _star="${2}"
 
-if [[ "${_day:-um}" = yo ]] || [[ "${_star:-um}" = um ]]; then
+if [[ "${_day:-um}" = um ]] || [[ "${_star:-um}" = um ]]; then
     echo usage: $0 day star
     exit 1
 fi
