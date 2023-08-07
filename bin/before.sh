@@ -10,20 +10,19 @@ if [[ "${_day:-um}" = um ]] || [[ "${_star:-um}" = um ]]; then
     exit 1
 fi
 
-branch_name="go/day${_day}-star${_star}"
-echo $branch_name
+day_name="day${_day}-star${_star}"
+branch_name="go/${day_name}"
 
 git stash create "before ${branch_name}"
 git checkout -b "${branch_name}"
 
-mkdir -p "input-data/${branch_name}"
-mkdir -p src
-cd src
-# TODO: what is the golang version of this?
+mkdir -p "input-data/${day_name}"
+mkdir -p src/go
+cd src/go
 
-mkdir -p "${branch_name}"
-cd "${branch_name}"
-go mod init "github.com/seth-schroeder/advent-of-code-2020/${_day}/${_star}"
+mkdir -p "${day_name}"
+cd "${day_name}"
+go mod init "github.com/seth-schroeder/advent-of-code-2020/${day_name}"
 git add .
 
 git commit -m "Created branch for ${branch_name}"
